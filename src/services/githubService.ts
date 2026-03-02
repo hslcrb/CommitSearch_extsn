@@ -12,6 +12,7 @@ export interface Commit {
 export interface Repository {
   name: string;
   full_name: string;
+  private: boolean;
   owner: {
     login: string;
   };

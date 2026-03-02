@@ -62,6 +62,46 @@ body {
   transform: translateY(-2px);
 }
 
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.filter-group:hover {
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.filter-select {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-label {
+  font-weight: 500;
+}
+
 .results-list {
   display: flex;
   flex-direction: column;
@@ -100,6 +140,14 @@ body {
   justify-content: space-between;
 }
 
+.repo-tag {
+  background: rgba(37, 99, 235, 0.15);
+  color: var(--accent);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
 .status-bar {
   font-size: 12px;
   color: var(--accent);
@@ -115,8 +163,34 @@ button.primary {
   cursor: pointer;
   font-weight: 600;
   transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 button.primary:hover {
   opacity: 0.9;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+::-webkit-scrollbar {
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
 }
