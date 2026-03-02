@@ -19,35 +19,28 @@
   (Sort results by newest or oldest.)
 - **보안 중심 (Security Focused)**: GitHub 토큰을 브라우저의 로컬 보안 저장소에만 보관하며, 외부 서버로 전송하지 않습니다.
   (Stores tokens securely in local storage and never sends them to external servers.)
-- **프리미엄 브랜딩 (Premium Branding)**: 새롭게 디자인된 고해상도 프리미엄 SVG 아이콘과 다크 모드 UI를 제공합니다.
-  (Features a newly designed high-fidelity premium SVG icon and dark mode UI.)
+- **프리미엄 브랜딩 (Premium Branding)**: 세련된 다크 모드 인터페이스와 프리미엄 SVG 아이콘을 제공합니다.
+  (Provides a sleek dark mode interface and a premium SVG icon.)
 
 ## 📦 설치 및 사용 (Installation & Usage)
 
-### 1. 릴리즈에서 다운로드 (Download from Releases)
-가장 권장되는 설치 방법입니다. (The recommended way to install.)
+이 저장소는 빌드된 결과물(`dist`)을 포함하고 있어 즉시 설치가 가능합니다.
+(This repository includes pre-built artifacts (`dist`) for immediate installation.)
 
-1.  [Releases](https://github.com/hslcrb/CommitSearch_extsn/releases) 페이지에서 최신 버전의 `commitsearch-v0.0.0.zip` 파일을 다운로드합니다.
-2.  압축을 풉니다. (Extract the zip file.)
-3.  크롬 브라우저에서 `chrome://extensions/`로 이동하여 **개발자 모드**를 켭니다.
-4.  **압축해제된 확장 프로그램을 로드합니다(Load unpacked)**를 클릭하고 압축을 푼 `dist` 폴더를 선택합니다.
+1.  이 저장소를 클론하거나 ZIP으로 다운로드합니다.
+    (Clone this repo or download as ZIP.)
+2.  크롬 브라우저에서 `chrome://extensions/`로 이동하여 **개발자 모드**를 켭니다.
+    (Go to `chrome://extensions/` and enable **Developer mode**.)
+3.  **압축해제된 확장 프로그램을 로드합니다(Load unpacked)**를 클릭하고 현재 폴더의 `dist` 폴더를 선택합니다.
+    (Click **Load unpacked** and select the `dist` folder in this directory.)
 
-### 2. 도커 사용하기 (Using Docker)
-빌드 환경을 일관되게 유지하거나 웹 프리뷰를 실행할 때 사용합니다.
-(Keep the build environment consistent or run a web preview.)
-
-```bash
-# 로컬 빌드 (Local build)
-docker build -t commitsearch_extsn .
-
-# 컨테이너 실행 (Run container)
-docker run -d -p 8080:80 commitsearch_extsn
-```
+*참고: 직접 빌드하고 싶은 경우 `npm install` 후 `npm run build`를 실행하세요.*
+(*Note: To build manually, run `npm install` then `npm run build`.*)
 
 ## 🤝 기여 안내 (Contributing)
 
 이 프로젝트에 기여하고 싶으신가요? [CONTRIBUTING.md](CONTRIBUTING.md)에서 상세한 규칙과 가이드(한영 병기)를 확인하세요!
-(To contribute, please check [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines and bilingual commit rules!)
+(To contribute, please check [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines!)
 
 ## 📜 라이선스 (License)
 
