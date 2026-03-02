@@ -1,7 +1,8 @@
 {
-  "name": "allcommits",
+  "name": "CommitSearch_extsn",
   "private": true,
   "version": "0.0.0",
+  "homepage": "https://rheehose.com",
   "type": "module",
   "scripts": {
     "dev": "vite",
