@@ -20,16 +20,20 @@
 
 ## 설치 방법 (Installation)
 
+이 저장소는 빌드된 결과물(`dist`)을 포함하고 있어 즉시 설치가 가능합니다.
+(This repository includes pre-built artifacts (`dist`) for immediate installation.)
+
 1. 이 저장소를 클론하거나 ZIP으로 다운로드합니다.
    (Clone this repo or download as ZIP.)
-2. `npm install` 후 `npm run build`를 실행합니다.
-   (Run `npm install` then `npm run build`.)
-3. 크롬 브라우저에서 `chrome://extensions/`로 이동합니다.
+2. 크롬 브라우저에서 `chrome://extensions/`로 이동합니다.
    (Go to `chrome://extensions/` in your Chrome browser.)
-4. '개발자 모드'를 활성화합니다.
+3. '개발자 모드'를 활성화합니다.
    (Enable 'Developer mode'.)
-5. '압축해제된 확장 프로그램을 로드합니다'를 클릭하고 `dist` 폴더를 선택합니다.
-   (Click 'Load unpacked' and select the `dist` folder.)
+4. '압축해제된 확장 프로그램을 로드합니다'를 클릭하고 현재 폴더의 `dist` 폴더를 선택합니다.
+   (Click 'Load unpacked' and select the `dist` folder in this directory.)
+
+*직접 빌드하고 싶은 경우:* `npm install` 후 `npm run build`를 실행하세요.
+(*To build manually:* Run `npm install` then `npm run build`.)
 
 ## 사용 방법 (Usage)
 
