@@ -39,4 +39,4 @@
 
 ## 라이선스 (License)
 
-MIT License. See [LICENSE](LICENSE) for details. (Coming soon)
+Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for details. (저작권자: Rheehose (Rhee Creative) 2008-2026)
