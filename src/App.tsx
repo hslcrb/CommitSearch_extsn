@@ -1,6 +1,6 @@
 /// <reference types="chrome" />
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Github, RefreshCw, ExternalLink, Filter, ChevronDown, SortAsc, SortDesc } from 'lucide-react';
+import { Search, Github, RefreshCw, ExternalLink, Filter, SortAsc, SortDesc } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GitHubService, type Commit, type Repository } from './services/githubService';
 import { storageService } from './services/storageService';
@@ -13,6 +13,8 @@ function App() {
   const [token, setToken] = useState<string>('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [status, setStatus] = useState('');
+  const [showSettings, setShowSettings] = useState(false);
+  const [tempToken, setTempToken] = useState('');
 
   // Filters
   const [selectedRepo, setSelectedRepo] = useState<string>('all');
@@ -28,7 +30,10 @@ function App() {
       setRepos(storedRepos);
     });
     chrome.storage.local.get(['github_token'], (result: Record<string, any>) => {
-      if (result.github_token) setToken(result.github_token);
+      if (result.github_token) {
+        setToken(result.github_token);
+        setTempToken(result.github_token);
+      }
     });
   }, []);
 
@@ -59,13 +64,20 @@ function App() {
     return result.slice(0, 50);
   }, [query, commits, selectedRepo, visibilityFilter, sortOrder, repos]);
 
+  const handleSaveToken = async () => {
+    if (!tempToken) return;
+    setToken(tempToken);
+    chrome.storage.local.set({ github_token: tempToken });
+    setShowSettings(false);
+    setStatus('Token saved successfully!');
+    setTimeout(() => setStatus(''), 2000);
+  };
+
   const handleSync = async () => {
     if (!token) {
-      const input = prompt('Please enter your GitHub Personal Access Token:');
-      if (input) {
-        setToken(input);
-        chrome.storage.local.set({ github_token: input });
-      } else return;
+      setShowSettings(true);
+      setStatus('Please set your GitHub Token first.');
+      return;
     }
 
     setIsSyncing(true);
@@ -107,9 +119,47 @@ function App() {
             {isSyncing ? <RefreshCw className="animate-spin" size={16} /> : <Github size={16} />}
             <span style={{ marginLeft: '8px' }}>{isSyncing ? 'Syncing...' : 'Sync GitHub'}</span>
           </button>
+          <button className="secondary" onClick={() => setShowSettings(!showSettings)}>
+            <Github size={16} />
+            <span style={{ marginLeft: '8px' }}>Settings</span>
+          </button>
         </div>
         {status && <div className="status-bar">{status}</div>}
       </header>
+
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="settings-card"
+          >
+            <h3 className="settings-title">GitHub Token Configuration</h3>
+            <p className="settings-desc">
+              Your token is stored locally in your browser's secure storage.
+              It is only used to fetch your repositories and commits.
+            </p>
+            <div className="settings-input-wrapper">
+              <input
+                type="password"
+                className="search-box"
+                placeholder="ghp_xxxxxxxxxxxx"
+                value={tempToken}
+                onChange={(e) => setTempToken(e.target.value)}
+              />
+              <button
+                className="primary"
+                onClick={handleSaveToken}
+                style={{ marginTop: '12px', width: '100%' }}
+              >
+                Save Token
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       <div className="search-input-wrapper">
         <input
