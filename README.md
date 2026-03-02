@@ -5,7 +5,7 @@
 
 ---
 
-## 주요 기능 (Key Features)
+## 🚀 주요 기능 (Key Features)
 
 - **초고속 로컬 검색 (Ultra-Fast Local Search)**: `FlexSearch` 엔진을 사용하여 수만 개의 커밋도 밀리초 단위로 검색합니다.
   (Uses the `FlexSearch` engine to search tens of thousands of commits in milliseconds.)
@@ -18,33 +18,35 @@
 - **유려한 UI (Premium UI)**: 세련된 다크 모드 인터페이스와 커스텀 SVG 아이콘을 제공합니다.
   (Provides a sleek dark mode interface and custom SVG icons.)
 
-## 설치 방법 (Installation)
+## 📦 설치 및 사용 (Installation & Usage)
 
-이 저장소는 빌드된 결과물(`dist`)을 포함하고 있어 즉시 설치가 가능합니다.
-(This repository includes pre-built artifacts (`dist`) for immediate installation.)
+### 1. 릴리즈에서 다운로드 (Download from Releases)
+가장 빠르고 쉬운 설치 방법입니다.
+The fastest and easiest way to install.
 
-1. 이 저장소를 클론하거나 ZIP으로 다운로드합니다.
-   (Clone this repo or download as ZIP.)
-2. 크롬 브라우저에서 `chrome://extensions/`로 이동합니다.
-   (Go to `chrome://extensions/` in your Chrome browser.)
-3. '개발자 모드'를 활성화합니다.
-   (Enable 'Developer mode'.)
-4. '압축해제된 확장 프로그램을 로드합니다'를 클릭하고 현재 폴더의 `dist` 폴더를 선택합니다.
-   (Click 'Load unpacked' and select the `dist` folder in this directory.)
+1.  [Releases](https://github.com/hslcrb/CommitSearch_extsn/releases) 페이지에서 최신 버전의 `.zip` 파일을 다운로드합니다.
+    (Download the latest `.zip` file from the Releases page.)
+2.  압축을 풉니다. (Extract the zip file.)
+3.  크롬 브라우저에서 `chrome://extensions/`로 이동하여 **개발자 모드**를 켭니다.
+    (Go to `chrome://extensions/` and enable **Developer mode**.)
+4.  **압축해제된 확장 프로그램을 로드합니다(Load unpacked)**를 클릭하고 압축을 푼 `dist` 폴더를 선택합니다.
+    (Click **Load unpacked** and select the extracted `dist` folder.)
 
-*직접 빌드하고 싶은 경우:* `npm install` 후 `npm run build`를 실행하세요.
-(*To build manually:* Run `npm install` then `npm run build`.)
+### 2. 도커 사용하기 (Using Docker)
+빌드 환경을 일관되게 유지하거나 웹에서 데모를 실행할 때 사용합니다.
+Used to keep the build environment consistent or run a demo on the web.
 
-## 사용 방법 (Usage)
+```bash
+# GHCR에서 이미지 가져오기 (Pull image from GHCR)
+docker pull ghcr.io/hslcrb/commitsearch_extsn:latest
 
-1. 확장을 실행하고 **Settings** 버튼을 눌러 GitHub Personal Access Token을 입력한 뒤 저장하세요.
-   (Run the extension, click **Settings**, enter your GitHub PAT, and save.)
-2. **Sync GitHub** 버튼을 눌러 데이터를 로컬로 가져오세요.
-   (Click **Sync GitHub** to bring your data to local storage.)
-3. 검색창에 검색어를 입력하여 커밋을 찾으세요!
-   (Enter search terms in the search bar to find your commits!)
+# 컨테이너 실행 (Run container)
+docker run -d -p 8080:80 ghcr.io/hslcrb/commitsearch_extsn:latest
+```
+*주의: 도커는 웹 프리뷰용이며, 확장 프로그램으로 설치하려면 컨테이너 내부의 `dist` 폴더 결과물이 필요합니다.*
+(*Note: Docker is for web preview; to install as an extension, you need the `dist` folder output from inside the container.*)
 
-## 기술 스택 (Tech Stack)
+## 🛠 기술 스택 (Tech Stack)
 
 - **Frontend**: React + TypeScript
 - **Build Tool**: Vite
@@ -52,8 +54,14 @@
 - **Storage**: IndexedDB (idb)
 - **Icons**: Lucide React, Custom SVG
 - **Animations**: Framer Motion
+- **DevOps**: Docker, GitHub Actions (GHCR)
 
-## 라이선스 (License)
+## 🤝 기여 안내 (Contributing)
+
+이 프로젝트에 기여하고 싶으신가요? [CONTRIBUTING.md](CONTRIBUTING.md)에서 상세한 규칙과 가이드를 확인하세요!
+Want to contribute? Check out [CONTRIBUTING.md](CONTRIBUTING.md) for detailed rules and guidelines!
+
+## 📜 라이선스 (License)
 
 Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for details.
 (저작권자: Rheehose (Rhee Creative) 2008-2026)
