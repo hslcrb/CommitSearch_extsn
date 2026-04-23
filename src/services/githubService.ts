@@ -44,26 +44,34 @@ export class GitHubService {
       if (response.data.length === 0) break;
       repos = [...repos, ...response.data];
       page++;
-      if (page > 10) break; // Safety limit for now
+      if (page > 10) break; // 1000 repositories limit
     }
     return repos;
   }
 
-  async fetchCommits(repoFullName: string): Promise<Commit[]> {
+  async fetchCommits(repoFullName: string, maxPages: number = 5): Promise<Commit[]> {
     let commits: Commit[] = [];
+    let page = 1;
     try {
-      const response = await axios.get(`${this.baseUrl}/repos/${repoFullName}/commits`, {
-        headers: this.headers,
-        params: { per_page: 100 },
-      });
-      commits = response.data.map((item: any) => ({
-        sha: item.sha,
-        message: item.commit.message,
-        url: item.html_url,
-        date: item.commit.author.date,
-        author: item.commit.author.name,
-        repoName: repoFullName,
-      }));
+      while (page <= maxPages) {
+        const response = await axios.get(`${this.baseUrl}/repos/${repoFullName}/commits`, {
+          headers: this.headers,
+          params: { per_page: 100, page },
+        });
+        if (response.data.length === 0) break;
+        
+        const mappedCommits = response.data.map((item: any) => ({
+          sha: item.sha,
+          message: item.commit.message,
+          url: item.html_url,
+          date: item.commit.author.date,
+          author: item.commit.author.name,
+          repoName: repoFullName,
+        }));
+        
+        commits = [...commits, ...mappedCommits];
+        page++;
+      }
     } catch (error) {
       console.error(`Error fetching commits for ${repoFullName}:`, error);
     }

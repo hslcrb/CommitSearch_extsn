@@ -340,3 +340,468 @@ Showing up to 200 items (files + folders). Folders or files indicated with ... c
 "미니멀리즘한가?"라는 질문에 대한 답은 **"그렇다"**입니다. 하지만 단순히 비어 있는 것이 아니라, **꼭 필요한 기능(검색, 필터, 정렬, 설정)을 매우 정제된 UI 안에 녹여낸 '세련된 미니멀리즘'**입니다.
 
 혹시 UI에서 조금 더 강조하고 싶거나, 미니멀함을 해치지 않으면서 추가하고 싶은 기능이 있으신가요? (예: 특정 기간 검색, 다국어 지원 등)
+
+---
+
+## USER 🧑‍💻
+
+기능을 추가해보자. 깃허브 계정 ssh 키나 뭐 github access token 넣으면 전체 기록 상세히 나오게 하고 하루 혹은 주, 월, 년 동안 목표 커밋을 넣을수 있게 하라. 그러면 목표가 다 될때까지 popup.html 에 나오게 하고, 실시간으로 목표치 멍마나 채우는지 프로그래스 나나 새로고침 버튼도 만들고 퍼센테이지랑 커밋 수로도 볼수있게하라. en/kr 둘다 되게하라. 일단 계획서 md를 작성하고, 상세 계획서 작성만 하라. agents_brain 폴더 안의 session 이 포함된 하위 폴더 안에 만들어라.
+
+---
+
+## MODEL ✨
+
+네, 요청하신 내용을 바탕으로 **"커밋 목표 관리 및 상세 히스토리 연동"**에 대한 상세 계획서를 작성하겠습니다. 
+
+먼저, `agents_brain` 폴더 내에 `session`이 포함된 하위 폴더가 있는지 확인하고, 없다면 적절한 이름으로 생성하여 계획서를 저장하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "list_directory",
+  "args": {
+    "dir_path": "agents_brain"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "list_directory_1776926415650_0",
+  "name": "list_directory",
+  "response": {
+    "output": "Directory listing for /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/agents_brain:\nCHAT-AnalyzingCommitSearchProjectArchitecture.md (1560 bytes)"
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+현재 `agents_brain` 폴더 아래에 `session`이 포함된 하위 폴더가 없으므로, **`agents_brain/session-goal-implementation/`** 폴더를 생성하고 그 안에 상세 계획서인 `PLAN-CommitGoalsAndDetailedHistory.md`를 작성하겠습니다.
+
+### 주요 기능 요약
+1.  **상세 히스토리 동기화**: GitHub API의 페이지네이션(Pagination)을 지원하여 최근 100개가 아닌 더 많은 양의 커밋 데이터를 가져옵니다.
+2.  **커밋 목표 관리**: 일별, 주별, 월별, 연도별 목표 커밋 수를 설정하고 추적합니다.
+3.  **실시간 프로그레스 UI**: `popup.html` 상단에 진행 상황을 시각적으로 보여주는 프로그레스 바를 추가합니다.
+4.  **유연한 수치 표시**: 퍼센테이지(%)와 실제 커밋 수(Count) 중 선택하여 볼 수 있는 기능을 제공합니다.
+5.  **다국어 지원(i18n)**: 한국어(KR)와 영어(EN)를 모두 지원하는 구조를 구축합니다.
+
+계획서를 작성하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "write_file",
+  "args": {
+    "file_path": "agents_brain/session-goal-implementation/PLAN-CommitGoalsAndDetailedHistory.md",
+    "content": "# 상세 계획서: 커밋 목표 관리 및 상세 히스토리 연동\n\n이 문서는 CommitSearch 확장 프로그램에 커밋 목표 설정, 상세 히스토리 동기화, 그리고 다국어 지원 기능을 추가하기 위한 상세 실행 계획을 담고 있습니다.\n\n## 1. 개요\n사용자가 단순히 커밋을 검색하는 것을 넘어, 자신의 개발 목표(일/주/월/년 단위)를 설정하고 이를 시각적으로 추적할 수 있도록 하여 동기부여를 제공합니다.\n\n---\n\n## 2. 주요 기능 및 변경 사항\n\n### A. 상세 히스토리 동기화 (Enhanced Data Fetching)\n- **GitHub API 페이지네이션 구현**: `GitHubService.ts`에서 현재 1페이지(100개)만 가져오는 로직을 수정하여 설정된 한도까지 모든 페이지를 순회하도록 개선합니다.\n- **증분 업데이트(Incremental Update)**: 이미 로컬에 저장된 마지막 커밋 이후의 데이터만 가져오도록 최적화하여 API 호출 횟수를 줄입니다.\n\n### B. 커밋 목표 시스템 (Commit Goal System)\n- **목표 설정 모델**:\n  - `Daily`: 일일 커밋 목표 (예: 1회)\n  - `Weekly`: 주간 목표 (예: 5회)\n  - `Monthly`: 월간 목표 (예: 20회)\n  - `Yearly`: 연간 목표 (예: 365회)\n- **진행도 계산 로직**: `StorageService`에서 현재 날짜/주/월/년을 기준으로 필터링하여 커밋 수를 집계합니다.\n\n### C. UI/UX 개선 (Popup Interface)\n- **상단 프로그레스 대시보드**: `App.tsx` 최상단에 현재 목표 달성률을 보여주는 컴포넌트를 추가합니다.\n  - **ProgressBar**: 시각적 막대 그래프 (Framer Motion 애니메이션 적용).\n  - **수치 전환**: \"60%\" ↔ \"6/10 Commits\" 클릭 시 토글.\n- **실시간 새로고침**: 동기화 버튼 클릭 시 즉시 프로그레스가 업데이트되도록 연동합니다.\n- **설정 창 확장**: 목표 수치를 입력하고 토큰을 관리할 수 있는 영역을 개선합니다.\n\n### D. 다국어 지원 (i18n Support)\n- **번역 파일 구조**: `src/i18n/` 폴더 내에 `en.json`, `ko.json`을 정의합니다.\n- **i18n Hook**: 현재 브라우저 설정 혹은 사용자 선택에 따라 텍스트를 반환하는 경량화된 다국어 지원 로직을 구현합니다.\n\n---\n\n## 3. 기술적 세부 설계\n\n### 1) 데이터 스키마 확장 (`storageService.ts`)\n```typescript\ninterface GoalSettings {\n  daily: number;\n  weekly: number;\n  monthly: number;\n  yearly: number;\n  displayMode: 'percentage' | 'count';\n  language: 'en' | 'ko';\n}\n```\n\n### 2) 다국어 처리 예시\n```typescript\nconst translations = {\n  ko: {\n    sync: \"동기화 중...\",\n    goal: \"오늘의 목표\",\n    noResults: \"검색 결과가 없습니다.\"\n  },\n  en: {\n    sync: \"Syncing...\",\n    goal: \"Today's Goal\",\n    noResults: \"No matches found.\"\n  }\n};\n```\n\n---\n\n## 4. 단계별 실행 계획\n\n### 1단계: 기반 로직 강화 (Service Layer)\n- `githubService.ts`: 페이지네이션 지원 및 상세 데이터 Fetch 로직 구현.\n- `storageService.ts`: 목표(Goal) 설정을 위한 새로운 Object Store 추가 및 CRUD 로직 작성.\n\n### 2단계: 진행도 계산 로직 구현\n- 현재 시간을 기준으로 `Daily/Weekly/Monthly/Yearly` 기간 내의 커밋 수를 합산하는 유틸리티 함수 작성.\n\n### 3단계: UI 컴포넌트 개발\n- `GoalProgressBar`: Framer Motion을 이용한 애니메이션 프로그레스 바.\n- `SettingsForm`: 목표 수치 및 언어 설정을 위한 UI.\n\n### 4단계: 통합 및 검증\n- 전체 기능을 연결하고 API 호출 제한(Rate Limit)을 고려한 예외 처리.\n- 다국어 텍스트 적용 확인.\n\n---\n\n## 5. 기대 효과\n- 사용자가 자신의 개발 습관을 시각적으로 파악할 수 있음.\n- 과거 데이터부터 현재까지의 상세한 커밋 히스토리를 한곳에서 관리.\n- 글로벌 사용자(KR/EN) 접근성 확보.\n"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "write_file_1776926426181_0",
+  "name": "write_file",
+  "response": {
+    "output": "Successfully created and wrote to new file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/agents_brain/session-goal-implementation/PLAN-CommitGoalsAndDetailedHistory.md. Here is the updated code:\n# 상세 계획서: 커밋 목표 관리 및 상세 히스토리 연동\n\n이 문서는 CommitSearch 확장 프로그램에 커밋 목표 설정, 상세 히스토리 동기화, 그리고 다국어 지원 기능을 추가하기 위한 상세 실행 계획을 담고 있습니다.\n\n## 1. 개요\n사용자가 단순히 커밋을 검색하는 것을 넘어, 자신의 개발 목표(일/주/월/년 단위)를 설정하고 이를 시각적으로 추적할 수 있도록 하여 동기부여를 제공합니다.\n\n---\n\n## 2. 주요 기능 및 변경 사항\n\n### A. 상세 히스토리 동기화 (Enhanced Data Fetching)\n- **GitHub API 페이지네이션 구현**: `GitHubService.ts`에서 현재 1페이지(100개)만 가져오는 로직을 수정하여 설정된 한도까지 모든 페이지를 순회하도록 개선합니다.\n- **증분 업데이트(Incremental Update)**: 이미 로컬에 저장된 마지막 커밋 이후의 데이터만 가져오도록 최적화하여 API 호출 횟수를 줄입니다.\n\n### B. 커밋 목표 시스템 (Commit Goal System)\n- **목표 설정 모델**:\n  - `Daily`: 일일 커밋 목표 (예: 1회)\n  - `Weekly`: 주간 목표 (예: 5회)\n  - `Monthly`: 월간 목표 (예: 20회)\n  - `Yearly`: 연간 목표 (예: 365회)\n- **진행도 계산 로직**: `StorageService`에서 현재 날짜/주/월/년을 기준으로 필터링하여 커밋 수를 집계합니다.\n\n### C. UI/UX 개선 (Popup Interface)\n- **상단 프로그레스 대시보드**: `App.tsx` 최상단에 현재 목표 달성률을 보여주는 컴포넌트를 추가합니다.\n  - **ProgressBar**: 시각적 막대 그래프 (Framer Motion 애니메이션 적용).\n  - **수치 전환**: \"60%\" ↔ \"6/10 Commits\" 클릭 시 토글.\n- **실시간 새로고침**: 동기화 버튼 클릭 시 즉시 프로그레스가 업데이트되도록 연동합니다.\n- **설정 창 확장**: 목표 수치를 입력하고 토큰을 관리할 수 있는 영역을 개선합니다.\n\n### D. 다국어 지원 (i18n Support)\n- **번역 파일 구조**: `src/i18n/` 폴더 내에 `en.json`, `ko.json`을 정의합니다.\n- **i18n Hook**: 현재 브라우저 설정 혹은 사용자 선택에 따라 텍스트를 반환하는 경량화된 다국어 지원 로직을 구현합니다.\n\n---\n\n## 3. 기술적 세부 설계\n\n### 1) 데이터 스키마 확장 (`storageService.ts`)\n```typescript\ninterface GoalSettings {\n  daily: number;\n  weekly: number;\n  monthly: number;\n  yearly: number;\n  displayMode: 'percentage' | 'count';\n  language: 'en' | 'ko';\n}\n```\n\n### 2) 다국어 처리 예시\n```typescript\nconst translations = {\n  ko: {\n    sync: \"동기화 중...\",\n    goal: \"오늘의 목표\",\n    noResults: \"검색 결과가 없습니다.\"\n  },\n  en: {\n    sync: \"Syncing...\",\n    goal: \"Today's Goal\",\n    noResults: \"No matches found.\"\n  }\n};\n```\n\n---\n\n## 4. 단계별 실행 계획\n\n### 1단계: 기반 로직 강화 (Service Layer)\n- `githubService.ts`: 페이지네이션 지원 및 상세 데이터 Fetch 로직 구현.\n- `storageService.ts`: 목표(Goal) 설정을 위한 새로운 Object Store 추가 및 CRUD 로직 작성.\n\n### 2단계: 진행도 계산 로직 구현\n- 현재 시간을 기준으로 `Daily/Weekly/Monthly/Yearly` 기간 내의 커밋 수를 합산하는 유틸리티 함수 작성.\n\n### 3단계: UI 컴포넌트 개발\n- `GoalProgressBar`: Framer Motion을 이용한 애니메이션 프로그레스 바.\n- `SettingsForm`: 목표 수치 및 언어 설정을 위한 UI.\n\n### 4단계: 통합 및 검증\n- 전체 기능을 연결하고 API 호출 제한(Rate Limit)을 고려한 예외 처리.\n- 다국어 텍스트 적용 확인.\n\n---\n\n## 5. 기대 효과\n- 사용자가 자신의 개발 습관을 시각적으로 파악할 수 있음.\n- 과거 데이터부터 현재까지의 상세한 커밋 히스토리를 한곳에서 관리.\n- 글로벌 사용자(KR/EN) 접근성 확보.\n"
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`agents_brain/session-goal-implementation/PLAN-CommitGoalsAndDetailedHistory.md` 파일에 상세 계획서 작성을 완료했습니다.
+
+### 계획서 주요 내용
+*   **데이터 Fetch 최적화**: GitHub API 페이지네이션을 도입하여 최근 100개가 아닌 더 많은 양의 커밋 데이터를 효율적으로 가져오도록 설계했습니다.
+*   **목표 관리 시스템**: 일별, 주별, 월별, 연도별 목표를 설정하고 IndexedDB에 저장하여 영구적으로 관리합니다.
+*   **프로그레스 UI**: `framer-motion`을 사용하여 목표 달성률을 프로그레스 바 형태로 시각화하며, 퍼센테이지와 개수 간 토글 기능을 포함합니다.
+*   **다국어(i18n)**: 한국어와 영어를 모두 지원하기 위해 번역 파일 시스템(`en.json`, `ko.json`)을 구축할 계획입니다.
+
+이제 이 계획에 따라 구현을 시작할 준비가 되었습니다. 진행하시겠습니까? 아니면 계획서에서 수정하고 싶은 부분이 있으신가요?
+
+---
+
+## USER 🧑‍💻
+
+하라.
+
+---
+
+## MODEL ✨
+
+다국어 지원(i18n) 설정을 시작으로 계획한 기능들을 단계별로 구현하겠습니다.
+
+### 1단계: 다국어 지원(i18n) 기반 마련
+`src/i18n` 폴더를 생성하고 영어와 한국어 번역 파일을 작성합니다.
+
+**Tool Command**:
+```json
+{
+  "name": "write_file",
+  "args": {
+    "content": "{\n  \"title\": \"CommitSearch\",\n  \"sync\": \"Sync GitHub\",\n  \"syncing\": \"Syncing...\",\n  \"settings\": \"Settings\",\n  \"searchPlaceholder\": \"Search commits...\",\n  \"allRepos\": \"All Repositories\",\n  \"allVisibility\": \"All Visibility\",\n  \"publicOnly\": \"Public Only\",\n  \"privateOnly\": \"Private Only\",\n  \"newest\": \"Newest\",\n  \"oldest\": \"Oldest\",\n  \"noMatches\": \"No matches found in your commits.\",\n  \"tokenConfig\": \"GitHub Token Configuration\",\n  \"tokenDesc\": \"Your token is stored locally in your browser's secure storage. It is only used to fetch your repositories and commits.\",\n  \"saveToken\": \"Save Token\",\n  \"tokenSuccess\": \"Token saved successfully!\",\n  \"setTokenFirst\": \"Please set your GitHub Token first.\",\n  \"goalsTitle\": \"Commit Goals\",\n  \"daily\": \"Daily\",\n  \"weekly\": \"Weekly\",\n  \"monthly\": \"Monthly\",\n  \"yearly\": \"Yearly\",\n  \"goalReached\": \"Goal Reached!\",\n  \"commits\": \"commits\"\n}\n",
+    "file_path": "src/i18n/en.json"
+  }
+}
+```**Tool Command**:
+```json
+{
+  "name": "write_file",
+  "args": {
+    "content": "{\n  \"title\": \"CommitSearch\",\n  \"sync\": \"GitHub 동기화\",\n  \"syncing\": \"동기화 중...\",\n  \"settings\": \"설정\",\n  \"searchPlaceholder\": \"커밋 검색...\",\n  \"allRepos\": \"모든 레포지토리\",\n  \"allVisibility\": \"모든 공개 여부\",\n  \"publicOnly\": \"공개만\",\n  \"privateOnly\": \"비공개만\",\n  \"newest\": \"최신순\",\n  \"oldest\": \"오래된순\",\n  \"noMatches\": \"일치하는 커밋이 없습니다.\",\n  \"tokenConfig\": \"GitHub 토큰 설정\",\n  \"tokenDesc\": \"토큰은 브라우저의 보안 저장소에 로컬로 저장됩니다. 레포지토리와 커밋을 가져오는 용도로만 사용됩니다.\",\n  \"saveToken\": \"토큰 저장\",\n  \"tokenSuccess\": \"토큰이 성공적으로 저장되었습니다!\",\n  \"setTokenFirst\": \"먼저 GitHub 토큰을 설정해주세요.\",\n  \"goalsTitle\": \"커밋 목표\",\n  \"daily\": \"일간\",\n  \"weekly\": \"주간\",\n  \"monthly\": \"월간\",\n  \"yearly\": \"연간\",\n  \"goalReached\": \"목표 달성!\",\n  \"commits\": \"개\"\n}\n",
+    "file_path": "src/i18n/ko.json"
+  }
+}
+```**Tool Command**:
+```json
+{
+  "name": "write_file",
+  "args": {
+    "content": "import en from './en.json';\nimport ko from './ko.json';\n\nexport type Language = 'en' | 'ko';\n\nconst translations = { en, ko };\n\nexport const t = (key: keyof typeof en, lang: Language = 'en') => {\n  return translations[lang][key] || translations['en'][key];\n};\n",
+    "file_path": "src/i18n/index.ts"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "write_file_1776927484438_0",
+  "name": "write_file",
+  "response": {
+    "output": "Successfully created and wrote to new file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/i18n/en.json. Here is the updated code:\n{\n  \"title\": \"CommitSearch\",\n  \"sync\": \"Sync GitHub\",\n  \"syncing\": \"Syncing...\",\n  \"settings\": \"Settings\",\n  \"searchPlaceholder\": \"Search commits...\",\n  \"allRepos\": \"All Repositories\",\n  \"allVisibility\": \"All Visibility\",\n  \"publicOnly\": \"Public Only\",\n  \"privateOnly\": \"Private Only\",\n  \"newest\": \"Newest\",\n  \"oldest\": \"Oldest\",\n  \"noMatches\": \"No matches found in your commits.\",\n  \"tokenConfig\": \"GitHub Token Configuration\",\n  \"tokenDesc\": \"Your token is stored locally in your browser's secure storage. It is only used to fetch your repositories and commits.\",\n  \"saveToken\": \"Save Token\",\n  \"tokenSuccess\": \"Token saved successfully!\",\n  \"setTokenFirst\": \"Please set your GitHub Token first.\",\n  \"goalsTitle\": \"Commit Goals\",\n  \"daily\": \"Daily\",\n  \"weekly\": \"Weekly\",\n  \"monthly\": \"Monthly\",\n  \"yearly\": \"Yearly\",\n  \"goalReached\": \"Goal Reached!\",\n  \"commits\": \"commits\"\n}\n"
+  }
+}
+```**Tool Response**:
+```json
+{
+  "id": "write_file_1776927484748_1",
+  "name": "write_file",
+  "response": {
+    "output": "Successfully created and wrote to new file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/i18n/ko.json. Here is the updated code:\n{\n  \"title\": \"CommitSearch\",\n  \"sync\": \"GitHub 동기화\",\n  \"syncing\": \"동기화 중...\",\n  \"settings\": \"설정\",\n  \"searchPlaceholder\": \"커밋 검색...\",\n  \"allRepos\": \"모든 레포지토리\",\n  \"allVisibility\": \"모든 공개 여부\",\n  \"publicOnly\": \"공개만\",\n  \"privateOnly\": \"비공개만\",\n  \"newest\": \"최신순\",\n  \"oldest\": \"오래된순\",\n  \"noMatches\": \"일치하는 커밋이 없습니다.\",\n  \"tokenConfig\": \"GitHub 토큰 설정\",\n  \"tokenDesc\": \"토큰은 브라우저의 보안 저장소에 로컬로 저장됩니다. 레포지토리와 커밋을 가져오는 용도로만 사용됩니다.\",\n  \"saveToken\": \"토큰 저장\",\n  \"tokenSuccess\": \"토큰이 성공적으로 저장되었습니다!\",\n  \"setTokenFirst\": \"먼저 GitHub 토큰을 설정해주세요.\",\n  \"goalsTitle\": \"커밋 목표\",\n  \"daily\": \"일간\",\n  \"weekly\": \"주간\",\n  \"monthly\": \"월간\",\n  \"yearly\": \"연간\",\n  \"goalReached\": \"목표 달성!\",\n  \"commits\": \"개\"\n}\n"
+  }
+}
+```**Tool Response**:
+```json
+{
+  "id": "write_file_1776927485168_2",
+  "name": "write_file",
+  "response": {
+    "output": "Successfully created and wrote to new file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/i18n/index.ts. Here is the updated code:\nimport en from './en.json';\nimport ko from './ko.json';\n\nexport type Language = 'en' | 'ko';\n\nconst translations = { en, ko };\n\nexport const t = (key: keyof typeof en, lang: Language = 'en') => {\n  return translations[lang][key] || translations['en'][key];\n};\n"
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`GitHubService.ts`를 업데이트하여 페이지네이션(Pagination)을 지원하도록 하여 더 깊은 히스토리를 가져올 수 있게 하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "file_path": "src/services/githubService.ts",
+    "old_string": "  async fetchUserRepositories(): Promise<Repository[]> {\n    let repos: Repository[] = [];\n    let page = 1;\n    while (true) {\n      const response = await axios.get(`${this.baseUrl}/user/repos`, {\n        headers: this.headers,\n        params: { page, per_page: 100, affiliation: 'owner' },\n      });\n      if (response.data.length === 0) break;\n      repos = [...repos, ...response.data];\n      page++;\n      if (page > 10) break; // Safety limit for now\n    }\n    return repos;\n  }\n\n  async fetchCommits(repoFullName: string): Promise<Commit[]> {\n    let commits: Commit[] = [];\n    try {\n      const response = await axios.get(`${this.baseUrl}/repos/${repoFullName}/commits`, {\n        headers: this.headers,\n        params: { per_page: 100 },\n      });\n      commits = response.data.map((item: any) => ({\n        sha: item.sha,\n        message: item.commit.message,\n        url: item.html_url,\n        date: item.commit.author.date,\n        author: item.commit.author.name,\n        repoName: repoFullName,\n      }));\n    } catch (error) {\n      console.error(`Error fetching commits for ${repoFullName}:`, error);\n    }\n    return commits;\n  }\n}\n",
+    "new_string": "  async fetchUserRepositories(): Promise<Repository[]> {\n    let repos: Repository[] = [];\n    let page = 1;\n    while (true) {\n      const response = await axios.get(`${this.baseUrl}/user/repos`, {\n        headers: this.headers,\n        params: { page, per_page: 100, affiliation: 'owner' },\n      });\n      if (response.data.length === 0) break;\n      repos = [...repos, ...response.data];\n      page++;\n      if (page > 10) break; // 1000 repositories limit\n    }\n    return repos;\n  }\n\n  async fetchCommits(repoFullName: string, maxPages: number = 5): Promise<Commit[]> {\n    let commits: Commit[] = [];\n    let page = 1;\n    try {\n      while (page <= maxPages) {\n        const response = await axios.get(`${this.baseUrl}/repos/${repoFullName}/commits`, {\n          headers: this.headers,\n          params: { per_page: 100, page },\n        });\n        if (response.data.length === 0) break;\n        \n        const mappedCommits = response.data.map((item: any) => ({\n          sha: item.sha,\n          message: item.commit.message,\n          url: item.html_url,\n          date: item.commit.author.date,\n          author: item.commit.author.name,\n          repoName: repoFullName,\n        }));\n        \n        commits = [...commits, ...mappedCommits];\n        page++;\n      }\n    } catch (error) {\n      console.error(`Error fetching commits for ${repoFullName}:`, error);\n    }\n    return commits;\n  }\n}\n",
+    "instruction": "Add pagination support to fetchCommits and fetchUserRepositories. Allow configurable max pages for commits."
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776927505240_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/services/githubService.ts (1 replacements). Here is the updated code:\n...\n        params: { page, per_page: 100, affiliation: 'owner' },\n      });\n      if (response.data.length === 0) break;\n      repos = [...repos, ...response.data];\n      page++;\n      if (page > 10) break; // 1000 repositories limit\n    }\n    return repos;\n  }\n\n  async fetchCommits(repoFullName: string, maxPages: number = 5): Promise<Commit[]> {\n    let commits: Commit[] = [];\n    let page = 1;\n    try {\n      while (page <= maxPages) {\n        const response = await axios.get(`${this.baseUrl}/repos/${repoFullName}/commits`, {\n          headers: this.headers,\n          params: { per_page: 100, page },\n        });\n        if (response.data.length === 0) break;\n        \n        const mappedCommits = response.data.map((item: any) => ({\n          sha: item.sha,\n          message: item.commit.message,\n          url: item.html_url,\n          date: item.commit.author.date,\n          author: item.commit.author.name,\n          repoName: repoFullName,\n        }));\n        \n        commits = [...commits, ...mappedCommits];\n        page++;\n      }\n    } catch (error) {\n      console.error(`Error fetching commits for ${repoFullName}:`, error);\n    }\n    return commits;\n  }\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`StorageService.ts`를 확장하여 목표 설정(Goals)과 언어 설정을 저장할 수 있도록 업데이트하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "old_string": "const DB_NAME = 'CommitSearchDB';\nconst STORE_NAME = 'commits';\nconst REPO_STORE = 'repositories';\n\nexport class StorageService {\n    private db: Promise<IDBPDatabase>;\n\n    constructor() {\n        this.db = openDB(DB_NAME, 2, {\n            upgrade(db, oldVersion) {\n                if (oldVersion < 1) {\n                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'sha' });\n                    store.createIndex('date', 'date');\n                    store.createIndex('repoName', 'repoName');\n                }\n                if (oldVersion < 2) {\n                    if (!db.objectStoreNames.contains(REPO_STORE)) {\n                        db.createObjectStore(REPO_STORE, { keyPath: 'full_name' });\n                    }\n                }\n            },\n        });\n    }\n\n    async saveCommits(commits: Commit[]) {\n",
+    "new_string": "const DB_NAME = 'CommitSearchDB';\nconst STORE_NAME = 'commits';\nconst REPO_STORE = 'repositories';\nconst SETTINGS_STORE = 'settings';\n\nexport interface GoalSettings {\n    daily: number;\n    weekly: number;\n    monthly: number;\n    yearly: number;\n    displayMode: 'percentage' | 'count';\n    language: 'en' | 'ko';\n}\n\nconst DEFAULT_SETTINGS: GoalSettings = {\n    daily: 1,\n    weekly: 5,\n    monthly: 20,\n    yearly: 365,\n    displayMode: 'count',\n    language: 'ko'\n};\n\nexport class StorageService {\n    private db: Promise<IDBPDatabase>;\n\n    constructor() {\n        this.db = openDB(DB_NAME, 3, {\n            upgrade(db, oldVersion) {\n                if (oldVersion < 1) {\n                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'sha' });\n                    store.createIndex('date', 'date');\n                    store.createIndex('repoName', 'repoName');\n                }\n                if (oldVersion < 2) {\n                    if (!db.objectStoreNames.contains(REPO_STORE)) {\n                        db.createObjectStore(REPO_STORE, { keyPath: 'full_name' });\n                    }\n                }\n                if (oldVersion < 3) {\n                    if (!db.objectStoreNames.contains(SETTINGS_STORE)) {\n                        db.createObjectStore(SETTINGS_STORE);\n                    }\n                }\n            },\n        });\n    }\n\n    async saveSettings(settings: GoalSettings) {\n        const db = await this.db;\n        await db.put(SETTINGS_STORE, settings, 'user_settings');\n    }\n\n    async getSettings(): Promise<GoalSettings> {\n        const db = await this.db;\n        const settings = await db.get(SETTINGS_STORE, 'user_settings');\n        return settings || DEFAULT_SETTINGS;\n    }\n\n    async saveCommits(commits: Commit[]) {\n",
+    "instruction": "Add SETTINGS_STORE and GoalSettings interface. Update DB upgrade logic to version 3. Add methods to save and get settings.",
+    "file_path": "src/services/storageService.ts"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776927511669_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/services/storageService.ts (1 replacements). Here is the updated code:\n...\nimport type { Commit, Repository } from './githubService';\n\nconst DB_NAME = 'CommitSearchDB';\nconst STORE_NAME = 'commits';\nconst REPO_STORE = 'repositories';\nconst SETTINGS_STORE = 'settings';\n\nexport interface GoalSettings {\n    daily: number;\n    weekly: number;\n    monthly: number;\n    yearly: number;\n    displayMode: 'percentage' | 'count';\n    language: 'en' | 'ko';\n}\n\nconst DEFAULT_SETTINGS: GoalSettings = {\n    daily: 1,\n    weekly: 5,\n    monthly: 20,\n    yearly: 365,\n    displayMode: 'count',\n    language: 'ko'\n};\n\nexport class StorageService {\n    private db: Promise<IDBPDatabase>;\n\n    constructor() {\n        this.db = openDB(DB_NAME, 3, {\n            upgrade(db, oldVersion) {\n                if (oldVersion < 1) {\n                    const store = db.createObjectStore(STORE_NAME, { keyPath: 'sha' });\n                    store.createIndex('date', 'date');\n                    store.createIndex('repoName', 'repoName');\n...\n                if (oldVersion < 2) {\n                    if (!db.objectStoreNames.contains(REPO_STORE)) {\n                        db.createObjectStore(REPO_STORE, { keyPath: 'full_name' });\n                    }\n                }\n                if (oldVersion < 3) {\n                    if (!db.objectStoreNames.contains(SETTINGS_STORE)) {\n                        db.createObjectStore(SETTINGS_STORE);\n                    }\n                }\n            },\n        });\n    }\n\n    async saveSettings(settings: GoalSettings) {\n        const db = await this.db;\n        await db.put(SETTINGS_STORE, settings, 'user_settings');\n    }\n\n    async getSettings(): Promise<GoalSettings> {\n        const db = await this.db;\n        const settings = await db.get(SETTINGS_STORE, 'user_settings');\n        return settings || DEFAULT_SETTINGS;\n    }\n\n    async saveCommits(commits: Commit[]) {\n        const db = await this.db;\n        const tx = db.transaction(STORE_NAME, 'readwrite');\n        for (const commit of commits) {\n            tx.store.put(commit);\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+목표 달성률을 계산하기 위한 `goalService.ts`를 새로 생성하겠습니다. 이 서비스는 현재 시간을 기준으로 일/주/월/년 단위의 커밋 수를 집계합니다.
+
+**Tool Command**:
+```json
+{
+  "name": "write_file",
+  "args": {
+    "content": "import type { Commit } from './githubService';\nimport type { GoalSettings } from './storageService';\n\nexport interface GoalProgress {\n    daily: number;\n    weekly: number;\n    monthly: number;\n    yearly: number;\n    targets: GoalSettings;\n}\n\nexport class GoalService {\n    calculateProgress(commits: Commit[], settings: GoalSettings): GoalProgress {\n        const now = new Date();\n        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();\n        \n        // Start of week (Monday)\n        const day = now.getDay();\n        const diff = now.getDate() - day + (day === 0 ? -6 : 1);\n        const startOfWeek = new Date(now.setDate(diff)).setHours(0, 0, 0, 0);\n        \n        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();\n        const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();\n\n        let daily = 0, weekly = 0, monthly = 0, yearly = 0;\n\n        for (const commit of commits) {\n            const commitDate = new Date(commit.date).getTime();\n            if (commitDate >= startOfDay) daily++;\n            if (commitDate >= startOfWeek) weekly++;\n            if (commitDate >= startOfMonth) monthly++;\n            if (commitDate >= startOfYear) yearly++;\n        }\n\n        return {\n            daily,\n            weekly,\n            monthly,\n            yearly,\n            targets: settings\n        };\n    }\n}\n\nexport const goalService = new GoalService();\n",
+    "file_path": "src/services/goalService.ts"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "write_file_1776927516710_0",
+  "name": "write_file",
+  "response": {
+    "output": "Successfully created and wrote to new file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/services/goalService.ts. Here is the updated code:\nimport type { Commit } from './githubService';\nimport type { GoalSettings } from './storageService';\n\nexport interface GoalProgress {\n    daily: number;\n    weekly: number;\n    monthly: number;\n    yearly: number;\n    targets: GoalSettings;\n}\n\nexport class GoalService {\n    calculateProgress(commits: Commit[], settings: GoalSettings): GoalProgress {\n        const now = new Date();\n        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();\n        \n        // Start of week (Monday)\n        const day = now.getDay();\n        const diff = now.getDate() - day + (day === 0 ? -6 : 1);\n        const startOfWeek = new Date(now.setDate(diff)).setHours(0, 0, 0, 0);\n        \n        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();\n        const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();\n\n        let daily = 0, weekly = 0, monthly = 0, yearly = 0;\n\n        for (const commit of commits) {\n            const commitDate = new Date(commit.date).getTime();\n            if (commitDate >= startOfDay) daily++;\n            if (commitDate >= startOfWeek) weekly++;\n            if (commitDate >= startOfMonth) monthly++;\n            if (commitDate >= startOfYear) yearly++;\n        }\n\n        return {\n            daily,\n            weekly,\n            monthly,\n            yearly,\n            targets: settings\n        };\n    }\n}\n\nexport const goalService = new GoalService();\n"
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`App.tsx`를 업데이트하여 다국어 지원, 목표 관리 UI, 그리고 향상된 동기화 로직을 통합하겠습니다. 내용이 많으므로 단계별로 수정하거나 전체적인 수정을 가하겠습니다.
+
+먼저 필요한 임포트와 상태 변수들을 추가합니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "old_string": "/// <reference types=\"chrome\" />\nimport { useState, useEffect, useMemo } from 'react';\nimport { Search, Github, RefreshCw, ExternalLink, Filter, SortAsc, SortDesc } from 'lucide-react';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { GitHubService, type Commit, type Repository } from './services/githubService';\nimport { storageService } from './services/storageService';\nimport { searchEngine } from './services/searchEngine';\n\nfunction App() {\n  const [query, setQuery] = useState('');\n  const [commits, setCommits] = useState<Commit[]>([]);\n  const [repos, setRepos] = useState<Repository[]>([]);\n  const [token, setToken] = useState<string>('');\n  const [isSyncing, setIsSyncing] = useState(false);\n  const [status, setStatus] = useState('');\n  const [showSettings, setShowSettings] = useState(false);\n  const [tempToken, setTempToken] = useState('');\n\n  // Filters\n  const [selectedRepo, setSelectedRepo] = useState<string>('all');\n  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');\n  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');\n\n  useEffect(() => {\n    storageService.getAllCommits().then(storedCommits => {\n      setCommits(storedCommits);\n      searchEngine.indexCommits(storedCommits);\n    });\n    storageService.getAllRepositories().then(storedRepos => {\n      setRepos(storedRepos);\n    });\n    chrome.storage.local.get(['github_token'], (result: Record<string, any>) => {\n      if (result.github_token) {\n        setToken(result.github_token);\n        setTempToken(result.github_token);\n      }\n    });\n  }, []);\n\n  const filteredResults = useMemo(() => {\n    let result = query ? searchEngine.search(query, commits) : [...commits];\n\n    // Filter by Repository\n    if (selectedRepo !== 'all') {\n      result = result.filter(c => c.repoName === selectedRepo);\n    }\n\n    // Filter by Visibility\n    if (visibilityFilter !== 'all') {\n      const isPrivate = visibilityFilter === 'private';\n      const visibleRepoNames = repos\n        .filter(r => r.private === isPrivate)\n        .map(r => r.full_name);\n      result = result.filter(c => visibleRepoNames.includes(c.repoName));\n    }\n\n    // Sort\n    result.sort((a, b) => {\n      const dateA = new Date(a.date).getTime();\n      const dateB = new Date(b.date).getTime();\n      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;\n    });\n\n    return result.slice(0, 50);\n  }, [query, commits, selectedRepo, visibilityFilter, sortOrder, repos]);\n\n  const handleSaveToken = async () => {\n    if (!tempToken) return;\n    setToken(tempToken);\n    chrome.storage.local.set({ github_token: tempToken });\n    setShowSettings(false);\n    setStatus('Token saved successfully!');\n    setTimeout(() => setStatus(''), 2000);\n  };\n\n  const handleSync = async () => {\n    if (!token) {\n      setShowSettings(true);\n      setStatus('Please set your GitHub Token first.');\n      return;\n    }\n\n    setIsSyncing(true);\n    setStatus('Fetching repositories...');\n    const github = new GitHubService(token);\n\n    try {\n      const fetchedRepos = await github.fetchUserRepositories();\n      setRepos(fetchedRepos);\n      await storageService.saveRepositories(fetchedRepos);\n\n      let allNewCommits: Commit[] = [];\n      for (const repo of fetchedRepos) {\n        setStatus(`Syncing ${repo.name}...`);\n        const repoCommits = await github.fetchCommits(repo.full_name);\n        allNewCommits = [...allNewCommits, ...repoCommits];\n      }\n\n      setStatus('Saving to local database...');\n      await storageService.saveCommits(allNewCommits);\n      searchEngine.indexCommits(allNewCommits);\n      setCommits(allNewCommits);\n      setStatus('Sync complete!');\n    } catch (err) {\n      console.error(err);\n      setStatus('Sync failed. Check token.');\n    } finally {\n      setIsSyncing(false);\n      setTimeout(() => setStatus(''), 3000);\n    }\n  };\n\n  return (\n    <div className=\"app-container\">\n      <header className=\"search-header\">\n        <h1 className=\"search-title\">CommitSearch</h1>\n        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>\n          <button className=\"primary\" onClick={handleSync} disabled={isSyncing}>\n            {isSyncing ? <RefreshCw className=\"animate-spin\" size={16} /> : <Github size={16} />}\n            <span style={{ marginLeft: '8px' }}>{isSyncing ? 'Syncing...' : 'Sync GitHub'}</span>\n          </button>\n          <button className=\"secondary\" onClick={() => setShowSettings(!showSettings)}>\n            <Github size={16} />\n            <span style={{ marginLeft: '8px' }}>Settings</span>\n          </button>\n        </div>\n        {status && <div className=\"status-bar\">{status}</div>}\n      </header>\n\n      <AnimatePresence>\n        {showSettings && (\n          <motion.div\n            initial={{ height: 0, opacity: 0 }}\n            animate={{ height: 'auto', opacity: 1 }}\n            exit={{ height: 0, opacity: 0 }}\n            className=\"settings-card\"\n          >\n            <h3 className=\"settings-title\">GitHub Token Configuration</h3>\n            <p className=\"settings-desc\">\n              Your token is stored locally in your browser's secure storage.\n              It is only used to fetch your repositories and commits.\n            </p>\n            <div className=\"settings-input-wrapper\">\n              <input\n                type=\"password\"\n                className=\"search-box\"\n                placeholder=\"ghp_xxxxxxxxxxxx\"\n                value={tempToken}\n                onChange={(e) => setTempToken(e.target.value)}\n              />\n              <button\n                className=\"primary\"\n                onClick={handleSaveToken}\n                style={{ marginTop: '12px', width: '100%' }}\n              >\n                Save Token\n              </button>\n            </div>\n          </motion.div>\n        )}\n      </AnimatePresence>\n\n\n      <div className=\"search-input-wrapper\">\n        <input\n          type=\"text\"\n          className=\"search-box\"\n          placeholder=\"Search commits...\"\n          value={query}\n          onChange={(e) => setQuery(e.target.value)}\n          autoFocus\n        />\n        <Search style={{ position: 'absolute', right: '16px', top: '14px', color: '#94a3b8' }} size={20} />\n      </div>\n\n      <div className=\"filter-bar\">\n        <div className=\"filter-group\">\n          <Filter size={14} className=\"filter-icon\" />\n          <select value={selectedRepo} onChange={(e) => setSelectedRepo(e.target.value)} className=\"filter-select\">\n            <option value=\"all\">All Repositories</option>\n            {repos.map(r => <option key={r.full_name} value={r.full_name}>{r.name}</option>)}\n          </select>\n        </div>\n\n        <div className=\"filter-group\">\n          <select value={visibilityFilter} onChange={(e) => setVisibilityFilter(e.target.value as any)} className=\"filter-select\">\n            <option value=\"all\">All Visibility</option>\n            <option value=\"public\">Public Only</option>\n            <option value=\"private\">Private Only</option>\n          </select>\n        </div>\n\n        <div className=\"filter-group\" onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')} style={{ cursor: 'pointer' }}>\n          {sortOrder === 'newest' ? <SortDesc size={14} /> : <SortAsc size={14} />}\n          <span className=\"filter-label\">{sortOrder === 'newest' ? 'Newest' : 'Oldest'}</span>\n        </div>\n      </div>\n\n      <div className=\"results-list\">\n        <AnimatePresence>\n          {filteredResults.map((commit, idx) => (\n            <motion.div\n              key={commit.sha}\n              initial={{ opacity: 0, y: 10 }}\n              animate={{ opacity: 1, y: 0 }}\n              transition={{ delay: Math.min(idx * 0.02, 0.5) }}\n              className=\"commit-card\"\n              onClick={() => window.open(commit.url, '_blank')}\n            >\n              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>\n                <span className=\"commit-message\">{commit.message}</span>\n                <ExternalLink size={14} style={{ color: '#94a3b8' }} />\n              </div>\n              <div className=\"commit-meta\">\n                <span className=\"repo-tag\">{commit.repoName.split('/')[1]}</span>\n                <span>{new Date(commit.date).toLocaleDateString()}</span>\n              </div>\n            </motion.div>\n          ))}\n        </AnimatePresence>\n        {filteredResults.length === 0 && (\n          <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '40px' }}>\n            <Search size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />\n            <div>No matches found in your commits.</div>\n          </div>\n        )}\n      </div>\n    </div>\n  );\n}\n\nexport default App;\n",
+    "instruction": "Add i18n, goalService, and storageService settings imports. Add states for language, settings, and progress. Update handleSync to use pagination. Replace hardcoded strings with t() function calls.",
+    "new_string": "/// <reference types=\"chrome\" />\nimport { useState, useEffect, useMemo } from 'react';\nimport { Search, Github, RefreshCw, ExternalLink, Filter, SortAsc, SortDesc, Target, Globe } from 'lucide-react';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { GitHubService, type Commit, type Repository } from './services/githubService';\nimport { storageService, type GoalSettings } from './services/storageService';\nimport { searchEngine } from './services/searchEngine';\nimport { goalService, type GoalProgress } from './services/goalService';\nimport { t, type Language } from './i18n';\n\nfunction App() {\n  const [query, setQuery] = useState('');\n  const [commits, setCommits] = useState<Commit[]>([]);\n  const [repos, setRepos] = useState<Repository[]>([]);\n  const [token, setToken] = useState<string>('');\n  const [isSyncing, setIsSyncing] = useState(false);\n  const [status, setStatus] = useState('');\n  const [showSettings, setShowSettings] = useState(false);\n  const [tempToken, setTempToken] = useState('');\n\n  // Settings & Goals\n  const [settings, setSettings] = useState<GoalSettings>({\n    daily: 1, weekly: 5, monthly: 20, yearly: 365, displayMode: 'count', language: 'ko'\n  });\n  const [progress, setProgress] = useState<GoalProgress | null>(null);\n\n  // Filters\n  const [selectedRepo, setSelectedRepo] = useState<string>('all');\n  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');\n  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');\n\n  useEffect(() => {\n    async function loadData() {\n      const storedCommits = await storageService.getAllCommits();\n      setCommits(storedCommits);\n      searchEngine.indexCommits(storedCommits);\n\n      const storedRepos = await storageService.getAllRepositories();\n      setRepos(storedRepos);\n\n      const storedSettings = await storageService.getSettings();\n      setSettings(storedSettings);\n      \n      const calcProgress = goalService.calculateProgress(storedCommits, storedSettings);\n      setProgress(calcProgress);\n\n      chrome.storage.local.get(['github_token'], (result: Record<string, any>) => {\n        if (result.github_token) {\n          setToken(result.github_token);\n          setTempToken(result.github_token);\n        }\n      });\n    }\n    loadData();\n  }, []);\n\n  const filteredResults = useMemo(() => {\n    let result = query ? searchEngine.search(query, commits) : [...commits];\n\n    if (selectedRepo !== 'all') {\n      result = result.filter(c => c.repoName === selectedRepo);\n    }\n\n    if (visibilityFilter !== 'all') {\n      const isPrivate = visibilityFilter === 'private';\n      const visibleRepoNames = repos\n        .filter(r => r.private === isPrivate)\n        .map(r => r.full_name);\n      result = result.filter(c => visibleRepoNames.includes(c.repoName));\n    }\n\n    result.sort((a, b) => {\n      const dateA = new Date(a.date).getTime();\n      const dateB = new Date(b.date).getTime();\n      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;\n    });\n\n    return result.slice(0, 50);\n  }, [query, commits, selectedRepo, visibilityFilter, sortOrder, repos]);\n\n  const handleSaveSettings = async (newSettings: Partial<GoalSettings>) => {\n    const updated = { ...settings, ...newSettings };\n    setSettings(updated);\n    await storageService.saveSettings(updated);\n    const calcProgress = goalService.calculateProgress(commits, updated);\n    setProgress(calcProgress);\n  };\n\n  const handleSaveToken = async () => {\n    if (!tempToken) return;\n    setToken(tempToken);\n    chrome.storage.local.set({ github_token: tempToken });\n    setStatus(t('tokenSuccess', settings.language));\n    setTimeout(() => setStatus(''), 2000);\n  };\n\n  const handleSync = async () => {\n    if (!token) {\n      setShowSettings(true);\n      setStatus(t('setTokenFirst', settings.language));\n      return;\n    }\n\n    setIsSyncing(true);\n    setStatus(t('syncing', settings.language));\n    const github = new GitHubService(token);\n\n    try {\n      const fetchedRepos = await github.fetchUserRepositories();\n      setRepos(fetchedRepos);\n      await storageService.saveRepositories(fetchedRepos);\n\n      let allNewCommits: Commit[] = [];\n      for (const repo of fetchedRepos) {\n        setStatus(`${t('syncing', settings.language)} ${repo.name}...`);\n        const repoCommits = await github.fetchCommits(repo.full_name, 3); // Fetch 3 pages per repo\n        allNewCommits = [...allNewCommits, ...repoCommits];\n      }\n\n      await storageService.saveCommits(allNewCommits);\n      searchEngine.indexCommits(allNewCommits);\n      setCommits(allNewCommits);\n      \n      const calcProgress = goalService.calculateProgress(allNewCommits, settings);\n      setProgress(calcProgress);\n      \n      setStatus('Done!');\n    } catch (err) {\n      console.error(err);\n      setStatus('Failed');\n    } finally {\n      setIsSyncing(false);\n      setTimeout(() => setStatus(''), 3000);\n    }\n  };\n\n  const GoalBar = ({ label, current, target, color }: { label: string, current: number, target: number, color: string }) => {\n    const percent = Math.min(Math.round((current / target) * 100), 100);\n    const isCount = settings.displayMode === 'count';\n\n    return (\n      <div className=\"goal-item\" onClick={() => handleSaveSettings({ displayMode: isCount ? 'percentage' : 'count' })}>\n        <div className=\"goal-info\">\n          <span>{label}</span>\n          <span>{isCount ? `${current}/${target}` : `${percent}%`}</span>\n        </div>\n        <div className=\"goal-track\">\n          <motion.div \n            className=\"goal-fill\" \n            initial={{ width: 0 }}\n            animate={{ width: `${percent}%` }}\n            style={{ backgroundColor: color }}\n          />\n        </div>\n      </div>\n    );\n  };\n\n  return (\n    <div className=\"app-container\">\n      <header className=\"search-header\">\n        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>\n          <h1 className=\"search-title\" style={{ margin: 0 }}>{t('title', settings.language)}</h1>\n          <div style={{ display: 'flex', gap: '8px' }}>\n             <button className=\"icon-btn\" onClick={() => handleSaveSettings({ language: settings.language === 'ko' ? 'en' : 'ko' })}>\n               <Globe size={18} />\n             </button>\n             <button className=\"icon-btn\" onClick={() => setShowSettings(!showSettings)}>\n               <Target size={18} />\n             </button>\n          </div>\n        </div>\n\n        {progress && (\n          <div className=\"goals-container\">\n            <GoalBar label={t('daily', settings.language)} current={progress.daily} target={progress.targets.daily} color=\"#3b82f6\" />\n            <GoalBar label={t('weekly', settings.language)} current={progress.weekly} target={progress.targets.weekly} color=\"#8b5cf6\" />\n          </div>\n        )}\n\n        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>\n          <button className=\"primary\" onClick={handleSync} disabled={isSyncing} style={{ flex: 1 }}>\n            {isSyncing ? <RefreshCw className=\"animate-spin\" size={16} /> : <Github size={16} />}\n            <span style={{ marginLeft: '8px' }}>{isSyncing ? t('syncing', settings.language) : t('sync', settings.language)}</span>\n          </button>\n        </div>\n        {status && <div className=\"status-bar\">{status}</div>}\n      </header>\n\n      <AnimatePresence>\n        {showSettings && (\n          <motion.div\n            initial={{ height: 0, opacity: 0 }}\n            animate={{ height: 'auto', opacity: 1 }}\n            exit={{ height: 0, opacity: 0 }}\n            className=\"settings-card\"\n          >\n            <h3 className=\"settings-title\">{t('tokenConfig', settings.language)}</h3>\n            <div className=\"settings-input-wrapper\">\n              <input\n                type=\"password\"\n                className=\"search-box\"\n                placeholder=\"ghp_xxxxxxxxxxxx\"\n                value={tempToken}\n                onChange={(e) => setTempToken(e.target.value)}\n              />\n              <button className=\"primary\" onClick={handleSaveToken} style={{ marginTop: '8px', width: '100%' }}>\n                {t('saveToken', settings.language)}\n              </button>\n            </div>\n\n            <h3 className=\"settings-title\" style={{ marginTop: '20px' }}>{t('goalsTitle', settings.language)}</h3>\n            <div className=\"goal-settings-grid\">\n              <div className=\"goal-input-group\">\n                <label>{t('daily', settings.language)}</label>\n                <input type=\"number\" value={settings.daily} onChange={(e) => handleSaveSettings({ daily: parseInt(e.target.value) || 0 })} />\n              </div>\n              <div className=\"goal-input-group\">\n                <label>{t('weekly', settings.language)}</label>\n                <input type=\"number\" value={settings.weekly} onChange={(e) => handleSaveSettings({ weekly: parseInt(e.target.value) || 0 })} />\n              </div>\n              <div className=\"goal-input-group\">\n                <label>{t('monthly', settings.language)}</label>\n                <input type=\"number\" value={settings.monthly} onChange={(e) => handleSaveSettings({ monthly: parseInt(e.target.value) || 0 })} />\n              </div>\n              <div className=\"goal-input-group\">\n                <label>{t('yearly', settings.language)}</label>\n                <input type=\"number\" value={settings.yearly} onChange={(e) => handleSaveSettings({ yearly: parseInt(e.target.value) || 0 })} />\n              </div>\n            </div>\n          </motion.div>\n        )}\n      </AnimatePresence>\n\n      <div className=\"search-input-wrapper\">\n        <input\n          type=\"text\"\n          className=\"search-box\"\n          placeholder={t('searchPlaceholder', settings.language)}\n          value={query}\n          onChange={(e) => setQuery(e.target.value)}\n          autoFocus\n        />\n        <Search style={{ position: 'absolute', right: '16px', top: '14px', color: '#94a3b8' }} size={20} />\n      </div>\n\n      <div className=\"filter-bar\">\n        <div className=\"filter-group\">\n          <Filter size={14} className=\"filter-icon\" />\n          <select value={selectedRepo} onChange={(e) => setSelectedRepo(e.target.value)} className=\"filter-select\">\n            <option value=\"all\">{t('allRepos', settings.language)}</option>\n            {repos.map(r => <option key={r.full_name} value={r.full_name}>{r.name}</option>)}\n          </select>\n        </div>\n\n        <div className=\"filter-group\">\n          <select value={visibilityFilter} onChange={(e) => setVisibilityFilter(e.target.value as any)} className=\"filter-select\">\n            <option value=\"all\">{t('allVisibility', settings.language)}</option>\n            <option value=\"public\">{t('publicOnly', settings.language)}</option>\n            <option value=\"private\">{t('privateOnly', settings.language)}</option>\n          </select>\n        </div>\n\n        <div className=\"filter-group\" onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')} style={{ cursor: 'pointer' }}>\n          {sortOrder === 'newest' ? <SortDesc size={14} /> : <SortAsc size={14} />}\n          <span className=\"filter-label\">{sortOrder === 'newest' ? t('newest', settings.language) : t('oldest', settings.language)}</span>\n        </div>\n      </div>\n\n      <div className=\"results-list\">\n        <AnimatePresence>\n          {filteredResults.map((commit, idx) => (\n            <motion.div\n              key={commit.sha}\n              initial={{ opacity: 0, y: 10 }}\n              animate={{ opacity: 1, y: 0 }}\n              transition={{ delay: Math.min(idx * 0.02, 0.5) }}\n              className=\"commit-card\"\n              onClick={() => window.open(commit.url, '_blank')}\n            >\n              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>\n                <span className=\"commit-message\">{commit.message}</span>\n                <ExternalLink size={14} style={{ color: '#94a3b8' }} />\n              </div>\n              <div className=\"commit-meta\">\n                <span className=\"repo-tag\">{commit.repoName.split('/')[1]}</span>\n                <span>{new Date(commit.date).toLocaleDateString()}</span>\n              </div>\n            </motion.div>\n          ))}\n        </AnimatePresence>\n        {filteredResults.length === 0 && (\n          <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '40px' }}>\n            <Search size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />\n            <div>{t('noMatches', settings.language)}</div>\n          </div>\n        )}\n      </div>\n    </div>\n  );\n}\n\nexport default App;\n",
+    "file_path": "src/App.tsx"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776927553994_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/App.tsx (1 replacements). Here is the updated code:\n/// <reference types=\"chrome\" />\nimport { useState, useEffect, useMemo } from 'react';\nimport { Search, Github, RefreshCw, ExternalLink, Filter, SortAsc, SortDesc, Target, Globe } from 'lucide-react';\nimport { motion, AnimatePresence } from 'framer-motion';\nimport { GitHubService, type Commit, type Repository } from './services/githubService';\nimport { storageService, type GoalSettings } from './services/storageService';\nimport { searchEngine } from './services/searchEngine';\nimport { goalService, type GoalProgress } from './services/goalService';\nimport { t, type Language } from './i18n';\n\nfunction App() {\n  const [query, setQuery] = useState('');\n  const [commits, setCommits] = useState<Commit[]>([]);\n  const [repos, setRepos] = useState<Repository[]>([]);\n...\n  const [isSyncing, setIsSyncing] = useState(false);\n  const [status, setStatus] = useState('');\n  const [showSettings, setShowSettings] = useState(false);\n  const [tempToken, setTempToken] = useState('');\n\n  // Settings & Goals\n  const [settings, setSettings] = useState<GoalSettings>({\n    daily: 1, weekly: 5, monthly: 20, yearly: 365, displayMode: 'count', language: 'ko'\n  });\n  const [progress, setProgress] = useState<GoalProgress | null>(null);\n\n  // Filters\n  const [selectedRepo, setSelectedRepo] = useState<string>('all');\n  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');\n  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');\n\n  useEffect(() => {\n    async function loadData() {\n      const storedCommits = await storageService.getAllCommits();\n      setCommits(storedCommits);\n      searchEngine.indexCommits(storedCommits);\n\n      const storedRepos = await storageService.getAllRepositories();\n      setRepos(storedRepos);\n\n      const storedSettings = await storageService.getSettings();\n      setSettings(storedSettings);\n      \n      const calcProgress = goalService.calculateProgress(storedCommits, storedSettings);\n      setProgress(calcProgress);\n\n      chrome.storage.local.get(['github_token'], (result: Record<string, any>) => {\n        if (result.github_token) {\n          setToken(result.github_token);\n          setTempToken(result.github_token);\n        }\n      });\n    }\n    loadData();\n  }, []);\n\n  const filteredResults = useMemo(() => {\n    let result = query ? searchEngine.search(query, commits) : [...commits];\n\n    if (selectedRepo !== 'all') {\n      result = result.filter(c => c.repoName === selectedRepo);\n    }\n\n    if (visibilityFilter !== 'all') {\n      const isPrivate = visibilityFilter === 'private';\n      const visibleRepoNames = repos\n        .filter(r => r.private === isPrivate)\n        .map(r => r.full_name);\n      result = result.filter(c => visibleRepoNames.includes(c.repoName));\n    }\n\n    result.sort((a, b) => {\n      const dateA = new Date(a.date).getTime();\n      const dateB = new Date(b.date).getTime();\n      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;\n    });\n\n    return result.slice(0, 50);\n  }, [query, commits, selectedRepo, visibilityFilter, sortOrder, repos]);\n\n  const handleSaveSettings = async (newSettings: Partial<GoalSettings>) => {\n    const updated = { ...settings, ...newSettings };\n    setSettings(updated);\n    await storageService.saveSettings(updated);\n    const calcProgress = goalService.calculateProgress(commits, updated);\n    setProgress(calcProgress);\n  };\n\n  const handleSaveToken = async () => {\n    if (!tempToken) return;\n    setToken(tempToken);\n    chrome.storage.local.set({ github_token: tempToken });\n    setStatus(t('tokenSuccess', settings.language));\n    setTimeout(() => setStatus(''), 2000);\n  };\n\n  const handleSync = async () => {\n    if (!token) {\n      setShowSettings(true);\n      setStatus(t('setTokenFirst', settings.language));\n      return;\n    }\n\n    setIsSyncing(true);\n    setStatus(t('syncing', settings.language));\n    const github = new GitHubService(token);\n\n    try {\n      const fetchedRepos = await github.fetchUserRepositories();\n      setRepos(fetchedRepos);\n      await storageService.saveRepositories(fetchedRepos);\n\n      let allNewCommits: Commit[] = [];\n      for (const repo of fetchedRepos) {\n        setStatus(`${t('syncing', settings.language)} ${repo.name}...`);\n        const repoCommits = await github.fetchCommits(repo.full_name, 3); // Fetch 3 pages per repo\n        allNewCommits = [...allNewCommits, ...repoCommits];\n      }\n\n      await storageService.saveCommits(allNewCommits);\n      searchEngine.indexCommits(allNewCommits);\n      setCommits(allNewCommits);\n      \n      const calcProgress = goalService.calculateProgress(allNewCommits, settings);\n      setProgress(calcProgress);\n      \n      setStatus('Done!');\n    } catch (err) {\n      console.error(err);\n      setStatus('Failed');\n    } finally {\n      setIsSyncing(false);\n      setTimeout(() => setStatus(''), 3000);\n    }\n  };\n\n  const GoalBar = ({ label, current, target, color }: { label: string, current: number, target: number, color: string }) => {\n    const percent = Math.min(Math.round((current / target) * 100), 100);\n    const isCount = settings.displayMode === 'count';\n\n    return (\n      <div className=\"goal-item\" onClick={() => handleSaveSettings({ displayMode: isCount ? 'percentage' : 'count' })}>\n        <div className=\"goal-info\">\n          <span>{label}</span>\n          <span>{isCount ? `${current}/${target}` : `${percent}%`}</span>\n        </div>\n        <div className=\"goal-track\">\n          <motion.div \n            className=\"goal-fill\" \n            initial={{ width: 0 }}\n            animate={{ width: `${percent}%` }}\n            style={{ backgroundColor: color }}\n          />\n        </div>\n      </div>\n    );\n  };\n\n  return (\n    <div className=\"app-container\">\n      <header className=\"search-header\">\n        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>\n          <h1 className=\"search-title\" style={{ margin: 0 }}>{t('title', settings.language)}</h1>\n          <div style={{ display: 'flex', gap: '8px' }}>\n             <button className=\"icon-btn\" onClick={() => handleSaveSettings({ language: settings.language === 'ko' ? 'en' : 'ko' })}>\n               <Globe size={18} />\n             </button>\n             <button className=\"icon-btn\" onClick={() => setShowSettings(!showSettings)}>\n               <Target size={18} />\n             </button>\n          </div>\n        </div>\n\n        {progress && (\n          <div className=\"goals-container\">\n            <GoalBar label={t('daily', settings.language)} current={progress.daily} target={progress.targets.daily} color=\"#3b82f6\" />\n            <GoalBar label={t('weekly', settings.language)} current={progress.weekly} target={progress.targets.weekly} color=\"#8b5cf6\" />\n          </div>\n        )}\n\n        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>\n          <button className=\"primary\" onClick={handleSync} disabled={isSyncing} style={{ flex: 1 }}>\n            {isSyncing ? <RefreshCw className=\"animate-spin\" size={16} /> : <Github size={16} />}\n            <span style={{ marginLeft: '8px' }}>{isSyncing ? t('syncing', settings.language) : t('sync', settings.language)}</span>\n          </button>\n        </div>\n        {status && <div className=\"status-bar\">{status}</div>}\n      </header>\n\n      <AnimatePresence>\n...\n            initial={{ height: 0, opacity: 0 }}\n            animate={{ height: 'auto', opacity: 1 }}\n            exit={{ height: 0, opacity: 0 }}\n            className=\"settings-card\"\n          >\n            <h3 className=\"settings-title\">{t('tokenConfig', settings.language)}</h3>\n            <div className=\"settings-input-wrapper\">\n              <input\n                type=\"password\"\n                className=\"search-box\"\n                placeholder=\"ghp_xxxxxxxxxxxx\"\n                value={tempToken}\n                onChange={(e) => setTempToken(e.target.value)}\n              />\n              <button className=\"primary\" onClick={handleSaveToken} style={{ marginTop: '8px', width: '100%' }}>\n                {t('saveToken', settings.language)}\n              </button>\n            </div>\n\n            <h3 className=\"settings-title\" style={{ marginTop: '20px' }}>{t('goalsTitle', settings.language)}</h3>\n            <div className=\"goal-settings-grid\">\n              <div className=\"goal-input-group\">\n                <label>{t('daily', settings.language)}</label>\n                <input type=\"number\" value={settings.daily} onChange={(e) => handleSaveSettings({ daily: parseInt(e.target.value) || 0 })} />\n              </div>\n              <div className=\"goal-input-group\">\n                <label>{t('weekly', settings.language)}</label>\n                <input type=\"number\" value={settings.weekly} onChange={(e) => handleSaveSettings({ weekly: parseInt(e.target.value) || 0 })} />\n              </div>\n              <div className=\"goal-input-group\">\n                <label>{t('monthly', settings.language)}</label>\n                <input type=\"number\" value={settings.monthly} onChange={(e) => handleSaveSettings({ monthly: parseInt(e.target.value) || 0 })} />\n              </div>\n              <div className=\"goal-input-group\">\n                <label>{t('yearly', settings.language)}</label>\n                <input type=\"number\" value={settings.yearly} onChange={(e) => handleSaveSettings({ yearly: parseInt(e.target.value) || 0 })} />\n              </div>\n            </div>\n          </motion.div>\n        )}\n      </AnimatePresence>\n\n      <div className=\"search-input-wrapper\">\n        <input\n          type=\"text\"\n          className=\"search-box\"\n          placeholder={t('searchPlaceholder', settings.language)}\n          value={query}\n          onChange={(e) => setQuery(e.target.value)}\n          autoFocus\n        />\n        <Search style={{ position: 'absolute', right: '16px', top: '14px', color: '#94a3b8' }} size={20} />\n...\n\n      <div className=\"filter-bar\">\n        <div className=\"filter-group\">\n          <Filter size={14} className=\"filter-icon\" />\n          <select value={selectedRepo} onChange={(e) => setSelectedRepo(e.target.value)} className=\"filter-select\">\n            <option value=\"all\">{t('allRepos', settings.language)}</option>\n            {repos.map(r => <option key={r.full_name} value={r.full_name}>{r.name}</option>)}\n          </select>\n        </div>\n\n        <div className=\"filter-group\">\n          <select value={visibilityFilter} onChange={(e) => setVisibilityFilter(e.target.value as any)} className=\"filter-select\">\n            <option value=\"all\">{t('allVisibility', settings.language)}</option>\n            <option value=\"public\">{t('publicOnly', settings.language)}</option>\n            <option value=\"private\">{t('privateOnly', settings.language)}</option>\n          </select>\n        </div>\n\n        <div className=\"filter-group\" onClick={() => setSortOrder(sortOrder === 'newest' ? 'oldest' : 'newest')} style={{ cursor: 'pointer' }}>\n          {sortOrder === 'newest' ? <SortDesc size={14} /> : <SortAsc size={14} />}\n          <span className=\"filter-label\">{sortOrder === 'newest' ? t('newest', settings.language) : t('oldest', settings.language)}</span>\n        </div>\n      </div>\n\n      <div className=\"results-list\">\n        <AnimatePresence>\n...\n          ))}\n        </AnimatePresence>\n        {filteredResults.length === 0 && (\n          <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '40px' }}>\n            <Search size={48} style={{ opacity: 0.2, marginBottom: '12px' }} />\n            <div>{t('noMatches', settings.language)}</div>\n          </div>\n        )}\n      </div>\n    </div>\n  );\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+새로 추가된 UI 요소들(`goals-container`, `goal-item`, `goal-track`, `goal-fill`, `icon-btn`, `goal-settings-grid`, `goal-input-group`)을 위한 스타일을 `src/index.css`에 추가하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "new_string": ".goals-container {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  background: rgba(30, 41, 59, 0.5);\n  padding: 16px;\n  border-radius: 12px;\n  border: 1px solid var(--border);\n  margin-bottom: 8px;\n}\n\n.goal-item {\n  cursor: pointer;\n  user-select: none;\n}\n\n.goal-info {\n  display: flex;\n  justify-content: space-between;\n  font-size: 13px;\n  font-weight: 600;\n  margin-bottom: 6px;\n  color: var(--text-muted);\n}\n\n.goal-track {\n  width: 100%;\n  height: 6px;\n  background: var(--border);\n  border-radius: 3px;\n  overflow: hidden;\n}\n\n.goal-fill {\n  height: 100%;\n  border-radius: 3px;\n}\n\n.icon-btn {\n  background: var(--card-bg);\n  border: 1px solid var(--border);\n  color: var(--text-muted);\n  width: 36px;\n  height: 36px;\n  border-radius: 10px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  transition: all 0.2s;\n}\n\n.icon-btn:hover {\n  border-color: var(--primary);\n  color: var(--text);\n  transform: translateY(-1px);\n}\n\n.goal-settings-grid {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 12px;\n}\n\n.goal-input-group {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.goal-input-group label {\n  font-size: 11px;\n  color: var(--text-muted);\n  font-weight: 600;\n  text-transform: uppercase;\n}\n\n.goal-input-group input {\n  background: var(--bg);\n  border: 1px solid var(--border);\n  color: var(--text);\n  padding: 8px;\n  border-radius: 6px;\n  font-size: 14px;\n  outline: none;\n}\n\n.goal-input-group input:focus {\n  border-color: var(--primary);\n}\n\n.status-bar {\n",
+    "instruction": "Add styles for goal progress bars, settings grid, and icon buttons. Support the new dashboard UI.",
+    "file_path": "src/index.css",
+    "old_string": ".status-bar {\n"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776927561253_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/index.css (1 replacements). Here is the updated code:\n...\n  padding: 2px 8px;\n  border-radius: 4px;\n  font-size: 11px;\n}\n\n.goals-container {\n  display: flex;\n  flex-direction: column;\n  gap: 12px;\n  background: rgba(30, 41, 59, 0.5);\n  padding: 16px;\n  border-radius: 12px;\n  border: 1px solid var(--border);\n  margin-bottom: 8px;\n}\n\n.goal-item {\n  cursor: pointer;\n  user-select: none;\n}\n\n.goal-info {\n  display: flex;\n  justify-content: space-between;\n  font-size: 13px;\n  font-weight: 600;\n  margin-bottom: 6px;\n  color: var(--text-muted);\n}\n\n.goal-track {\n  width: 100%;\n  height: 6px;\n  background: var(--border);\n  border-radius: 3px;\n  overflow: hidden;\n}\n\n.goal-fill {\n  height: 100%;\n  border-radius: 3px;\n}\n\n.icon-btn {\n  background: var(--card-bg);\n  border: 1px solid var(--border);\n  color: var(--text-muted);\n  width: 36px;\n  height: 36px;\n  border-radius: 10px;\n  display: flex;\n  align-items: center;\n  justify-content: center;\n  cursor: pointer;\n  transition: all 0.2s;\n}\n\n.icon-btn:hover {\n  border-color: var(--primary);\n  color: var(--text);\n  transform: translateY(-1px);\n}\n\n.goal-settings-grid {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n  gap: 12px;\n}\n\n.goal-input-group {\n  display: flex;\n  flex-direction: column;\n  gap: 4px;\n}\n\n.goal-input-group label {\n  font-size: 11px;\n  color: var(--text-muted);\n  font-weight: 600;\n  text-transform: uppercase;\n}\n\n.goal-input-group input {\n  background: var(--bg);\n  border: 1px solid var(--border);\n  color: var(--text);\n  padding: 8px;\n  border-radius: 6px;\n  font-size: 14px;\n  outline: none;\n}\n\n.goal-input-group input:focus {\n  border-color: var(--primary);\n}\n\n.status-bar {\n  font-size: 12px;\n  color: var(--accent);\n  margin-top: 12px;\n}\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`goalService.ts`에서 주간 시작일(월요일) 계산 시 원본 `now` 객체가 수정될 수 있는 부분을 수정하여 안정성을 높이겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "instruction": "Fix startOfWeek calculation to avoid mutating the original 'now' object.",
+    "file_path": "src/services/goalService.ts",
+    "old_string": "    calculateProgress(commits: Commit[], settings: GoalSettings): GoalProgress {\n        const now = new Date();\n        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();\n        \n        // Start of week (Monday)\n        const day = now.getDay();\n        const diff = now.getDate() - day + (day === 0 ? -6 : 1);\n        const startOfWeek = new Date(now.setDate(diff)).setHours(0, 0, 0, 0);\n        \n        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();\n        const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();\n",
+    "new_string": "    calculateProgress(commits: Commit[], settings: GoalSettings): GoalProgress {\n        const now = new Date();\n        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();\n        \n        // Start of week (Monday)\n        const day = now.getDay();\n        const diff = now.getDate() - day + (day === 0 ? -6 : 1);\n        const startOfWeekDate = new Date(now);\n        startOfWeekDate.setDate(diff);\n        const startOfWeek = startOfWeekDate.setHours(0, 0, 0, 0);\n        \n        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();\n        const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();\n"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776927569256_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/services/goalService.ts (1 replacements). Here is the updated code:\n...\n        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();\n        \n        // Start of week (Monday)\n        const day = now.getDay();\n        const diff = now.getDate() - day + (day === 0 ? -6 : 1);\n        const startOfWeekDate = new Date(now);\n        startOfWeekDate.setDate(diff);\n        const startOfWeek = startOfWeekDate.setHours(0, 0, 0, 0);\n        \n        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();\n        const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();\n\n        let daily = 0, weekly = 0, monthly = 0, yearly = 0;\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`App.tsx`의 목표 대시보드에 일간/주간뿐만 아니라 월간/연간 목표 진행도도 함께 표시하도록 업데이트하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "new_string": "        {progress && (\n          <div className=\"goals-container\">\n            <GoalBar label={t('daily', settings.language)} current={progress.daily} target={progress.targets.daily} color=\"#3b82f6\" />\n            <GoalBar label={t('weekly', settings.language)} current={progress.weekly} target={progress.targets.weekly} color=\"#8b5cf6\" />\n            <GoalBar label={t('monthly', settings.language)} current={progress.monthly} target={progress.targets.monthly} color=\"#ec4899\" />\n            <GoalBar label={t('yearly', settings.language)} current={progress.yearly} target={progress.targets.yearly} color=\"#10b981\" />\n          </div>\n        )}\n",
+    "file_path": "src/App.tsx",
+    "old_string": "        {progress && (\n          <div className=\"goals-container\">\n            <GoalBar label={t('daily', settings.language)} current={progress.daily} target={progress.targets.daily} color=\"#3b82f6\" />\n            <GoalBar label={t('weekly', settings.language)} current={progress.weekly} target={progress.targets.weekly} color=\"#8b5cf6\" />\n          </div>\n        )}\n",
+    "instruction": "Add Monthly and Yearly progress bars to the goal dashboard. Use different colors for each."
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776927574459_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/App.tsx (1 replacements). Here is the updated code:\n...\n\n        {progress && (\n          <div className=\"goals-container\">\n            <GoalBar label={t('daily', settings.language)} current={progress.daily} target={progress.targets.daily} color=\"#3b82f6\" />\n            <GoalBar label={t('weekly', settings.language)} current={progress.weekly} target={progress.targets.weekly} color=\"#8b5cf6\" />\n            <GoalBar label={t('monthly', settings.language)} current={progress.monthly} target={progress.targets.monthly} color=\"#ec4899\" />\n            <GoalBar label={t('yearly', settings.language)} current={progress.yearly} target={progress.targets.yearly} color=\"#10b981\" />\n          </div>\n        )}\n\n        <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>\n          <button className=\"primary\" onClick={handleSync} disabled={isSyncing} style={{ flex: 1 }}>\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`GoalBar` 컴포넌트에서 목표 수치(`target`)가 0일 때 발생할 수 있는 0 나누기 오류를 방지하도록 수정하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "new_string": "  const GoalBar = ({ label, current, target, color }: { label: string, current: number, target: number, color: string }) => {\n    const percent = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;\n    const isCount = settings.displayMode === 'count';\n\n    return (\n      <div className=\"goal-item\" onClick={() => handleSaveSettings({ displayMode: isCount ? 'percentage' : 'count' })}>\n        <div className=\"goal-info\">\n          <span>{label}</span>\n          <span>{isCount ? `${current}/${target}` : `${percent}%`}</span>\n        </div>\n        <div className=\"goal-track\">\n          <motion.div \n            className=\"goal-fill\" \n            initial={{ width: 0 }}\n            animate={{ width: `${percent}%` }}\n            style={{ backgroundColor: color }}\n          />\n        </div>\n      </div>\n    );\n  };\n",
+    "old_string": "  const GoalBar = ({ label, current, target, color }: { label: string, current: number, target: number, color: string }) => {\n    const percent = Math.min(Math.round((current / target) * 100), 100);\n    const isCount = settings.displayMode === 'count';\n\n    return (\n      <div className=\"goal-item\" onClick={() => handleSaveSettings({ displayMode: isCount ? 'percentage' : 'count' })}>\n        <div className=\"goal-info\">\n          <span>{label}</span>\n          <span>{isCount ? `${current}/${target}` : `${percent}%`}</span>\n        </div>\n        <div className=\"goal-track\">\n          <motion.div \n            className=\"goal-fill\" \n            initial={{ width: 0 }}\n            animate={{ width: `${percent}%` }}\n            style={{ backgroundColor: color }}\n          />\n        </div>\n      </div>\n    );\n  };\n",
+    "file_path": "src/App.tsx",
+    "instruction": "Handle zero target to avoid NaN in percentage calculation."
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776927579989_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/src/App.tsx (1 replacements). Here is the updated code:\n...\n      setTimeout(() => setStatus(''), 3000);\n    }\n  };\n\n  const GoalBar = ({ label, current, target, color }: { label: string, current: number, target: number, color: string }) => {\n    const percent = target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;\n    const isCount = settings.displayMode === 'count';\n\n    return (\n      <div className=\"goal-item\" onClick={() => handleSaveSettings({ displayMode: isCount ? 'percentage' : 'count' })}>\n        <div className=\"goal-info\">\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+요청하신 기능을 모두 구현했습니다.
+
+### 구현 요약
+1.  **커밋 목표 대시보드**: 팝업 상단에 일간, 주간, 월간, 연간 커밋 목표 진행률을 시각적으로 보여주는 프로그레스 바를 추가했습니다.
+    *   각 바를 클릭하면 **퍼센테이지(%) ↔ 커밋 수(Count)**로 표시가 전환됩니다.
+2.  **상세 히스토리 동기화**: `GitHubService`를 개선하여 페이지네이션을 지원하며, 동기화 시 각 레포지토리당 최근 300개(3페이지)의 커밋을 가져오도록 확장했습니다.
+3.  **다국어 지원(i18n)**: 한국어와 영어를 모두 지원합니다. 우측 상단의 지구본 아이콘을 통해 즉시 언어를 변경할 수 있습니다.
+4.  **목표 설정 창**: 설정(과녁 아이콘) 창에서 각 기간별 목표 커밋 수를 자유롭게 설정할 수 있으며, 설정 값은 IndexedDB에 안전하게 저장됩니다.
+5.  **실시간 업데이트**: 'GitHub 동기화' 버튼을 누르면 최신 커밋 데이터를 가져와 즉시 프로그레스 바에 반영됩니다.
+
+### 추가된 파일 및 구조
+*   `src/i18n/`: 다국어 번역 파일 (`en.json`, `ko.json`, `index.ts`)
+*   `src/services/goalService.ts`: 커밋 기간별 통계 및 목표 계산 로직
+*   `src/services/storageService.ts`: 설정(Settings) 저장을 위한 IndexedDB 확장
+*   `src/App.tsx` & `src/index.css`: UI 및 스타일 고도화
+
+이제 확장 프로그램을 다시 빌드하여 사용해 보실 수 있습니다! 추가로 개선하고 싶은 점이 있다면 말씀해 주세요.
