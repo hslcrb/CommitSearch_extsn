@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "CommitSearch",
-    "version": "0.0.0",
+    "version": "0.1.0",
     "description": "Search all your GitHub commits with Google-like speed.",
     "permissions": [
         "storage",

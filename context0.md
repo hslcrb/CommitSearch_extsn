@@ -965,3 +965,198 @@ Showing up to 200 items (files + folders). Folders or files indicated with ... c
 이 프로젝트는 Vite를 사용하고 있어 빌드 속도가 매우 빠르며, 최신 React 19와 TypeScript를 적용하여 안정성이 높습니다. 이제 이 `.zip` 파일을 Chrome의 '압축해제된 확장 프로그램을 로드합니다' 메뉴를 통해 브라우저에 직접 설치하여 확인하실 수 있습니다.
 
 추가적으로 커밋 메시지 작성이나 다른 작업이 필요하시면 말씀해 주세요!
+
+---
+
+## USER 🧑‍💻
+
+그리고 이제 gh 써서 릴리즈로 배포하라.
+
+---
+
+## MODEL ✨
+
+`gh` CLI를 사용하여 현재 빌드된 `commitsearch-v0.0.0.zip` 파일을 릴리즈로 배포하겠습니다.
+
+먼저 현재 저장소의 원격(Remote) 설정과 `gh` 로그인 상태를 확인한 후, `v0.0.0` 태그로 릴리즈를 생성하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "run_shell_command",
+  "args": {
+    "description": "GitHub CLI 인증 상태 및 원격 저장소 확인",
+    "command": "gh auth status && git remote -v"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "run_shell_command_1776927981032_0",
+  "name": "run_shell_command",
+  "response": {
+    "output": "Output: github.com\n  ✓ Logged in to github.com account hslcrb (keyring)\n  - Active account: true\n  - Git operations protocol: https\n  - Token: gho_************************************\n  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'\norigin  https://github.com/hslcrb/CommitSearch_extsn.git (fetch)\norigin  https://github.com/hslcrb/CommitSearch_extsn.git (push)\nProcess Group PGID: 9657"
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`gh` 로그인과 원격 저장소(`hslcrb/CommitSearch_extsn`) 설정이 확인되었습니다.
+
+이제 `v0.0.0` 태그와 함께 빌드된 `.zip` 파일을 릴리즈로 배포하겠습니다. 릴리즈 노트는 이번에 추가된 **커밋 목표 대시보드 및 다국어 지원**에 대한 내용을 포함합니다.
+
+**Tool Command**:
+```json
+{
+  "name": "run_shell_command",
+  "args": {
+    "command": "gh release create v0.0.0 commitsearch-v0.0.0.zip --title \"v0.0.0: Commit Goals & i18n Support\" --notes \"### 🎉 New Features\n- **Commit Goals Dashboard**: Track your daily, weekly, monthly, and yearly commit progress.\n- **Detailed History Sync**: Fetch up to 300 commits per repository for deeper insights.\n- **Multi-language Support (i18n)**: Switch between English and Korean instantly.\n- **Visual Improvements**: Modern dark-themed UI with animated progress bars.\n\n### 📦 Assets\n- `commitsearch-v0.0.0.zip`: Production build for Chrome Extension.\"",
+    "description": "GitHub 릴리즈 생성 및 빌드 파일 배포 (v0.0.0)"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "run_shell_command_1776928013867_0",
+  "name": "run_shell_command",
+  "response": {
+    "output": "Output: /usr/bin/bash: 줄 2: commitsearch-v0.0.0.zip: 명령어를 찾을 수 없음\na release with the same tag name already exists: v0.0.0\nExit Code: 1\nProcess Group PGID: 9672"
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`v0.0.0` 태그의 릴리즈가 이미 존재한다는 오류가 발생했습니다. 기존 릴리즈를 업데이트하거나, 버전 번호를 올려서 배포해야 할 것 같습니다.
+
+현재 `package.json`의 버전이 `0.0.0`인 상태이므로, 다음 단계인 **`v0.1.0`**으로 버전을 업데이트한 후 새로운 릴리즈를 생성하겠습니다.
+
+먼저 `package.json`의 버전을 업데이트하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "new_string": "  \"version\": \"0.1.0\",",
+    "old_string": "  \"version\": \"0.0.0\",",
+    "file_path": "package.json",
+    "allow_multiple": false,
+    "instruction": "Update version to 0.1.0 in package.json."
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776928023187_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/package.json (1 replacements). Here is the updated code:\n{\n  \"name\": \"CommitSearch_extsn\",\n  \"private\": true,\n  \"version\": \"0.1.0\",\n  \"homepage\": \"https://rheehose.com\",\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"tsc -b && vite build\",\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`manifest.json`의 버전도 `0.1.0`으로 맞춰준 후, 빌드 파일을 다시 생성하고 `v0.1.0`으로 릴리즈를 배포하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "replace",
+  "args": {
+    "file_path": "public/manifest.json",
+    "new_string": "    \"version\": \"0.1.0\",",
+    "allow_multiple": false,
+    "old_string": "    \"version\": \"0.0.0\",",
+    "instruction": "Update version to 0.1.0 in manifest.json."
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "replace_1776928026248_0",
+  "name": "replace",
+  "response": {
+    "output": "Successfully modified file: /home/rheehoselenovo2/개발프로젝트/CommitSearch_extsn/public/manifest.json (1 replacements). Here is the updated code:\n{\n    \"manifest_version\": 3,\n    \"name\": \"CommitSearch\",\n    \"version\": \"0.1.0\",\n    \"description\": \"Search all your GitHub commits with Google-like speed.\",\n    \"permissions\": [\n        \"storage\",\n        \"identity\"\n    ],\n..."
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+이제 버전 정보를 `v0.1.0`으로 정렬했으므로, 다시 빌드하고 `commitsearch-v0.1.0.zip` 파일을 생성하여 `gh` 릴리즈로 배포하겠습니다.
+
+**Tool Command**:
+```json
+{
+  "name": "run_shell_command",
+  "args": {
+    "command": "npm run build && zip -r commitsearch-v0.1.0.zip dist/ && gh release create v0.1.0 commitsearch-v0.1.0.zip --title \"v0.1.0: Goals & i18n\" --notes \"First production-ready release with Commit Goals Dashboard and Multi-language support.\"",
+    "description": "빌드 및 GitHub 릴리즈 배포 (v0.1.0)"
+  }
+}
+```
+
+---
+
+## USER 🧑‍💻
+
+**Tool Response**:
+```json
+{
+  "id": "run_shell_command_1776928035082_0",
+  "name": "run_shell_command",
+  "response": {
+    "output": "Output: \n> CommitSearch_extsn@0.1.0 build\n> tsc -b && vite build\n\nvite v7.3.1 building client environment for production...\n✓ 2186 modules transformed.\ndist/index.html                                    0.46 kB │ gzip:   0.29 kB\ndist/assets/main-BYH_5Khp.css                      4.55 kB │ gzip:   1.41 kB\ndist/assets/__vite-browser-external-BIHI7g3E.js    0.03 kB │ gzip:   0.05 kB\ndist/assets/main-IOAiX3xh.js                     424.27 kB │ gzip: 140.71 kB\n✓ built in 4.41s\n  adding: dist/ (stored 0%)\n  adding: dist/index.html (deflated 39%)\n  adding: dist/manifest.json (deflated 51%)\n  adding: dist/assets/ (stored 0%)\n  adding: dist/assets/__vite-browser-external-BIHI7g3E.js (stored 0%)\n  adding: dist/assets/main-IOAiX3xh.js (deflated 67%)\n  adding: dist/assets/main-BYH_5Khp.css (deflated 69%)\n  adding: dist/icon.svg (deflated 64%)\n  adding: dist/vite.svg (deflated 50%)\nhttps://github.com/hslcrb/CommitSearch_extsn/releases/tag/v0.1.0\nProcess Group PGID: 9688"
+  }
+}
+```
+
+---
+
+## MODEL ✨
+
+`v0.1.0` 버전으로 GitHub 릴리즈가 성공적으로 배포되었습니다.
+
+*   **배포 URL**: https://github.com/hslcrb/CommitSearch_extsn/releases/tag/v0.1.0
+*   **포함된 변경 사항**: 
+    *   커밋 목표(Daily/Weekly/Monthly/Yearly) 대시보드
+    *   한국어/영어 다국어(i18n) 지원
+    *   상세 히스토리(페이지네이션) 동기화
+    *   UI/UX 개선 및 버그 수정
+
+이제 전 세계 사용자가 GitHub에서 최신 빌드 파일을 다운로드하여 CommitSearch를 사용할 수 있습니다! 추가적으로 진행할 작업이 더 있으신가요?

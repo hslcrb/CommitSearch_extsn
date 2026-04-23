@@ -1,7 +1,7 @@
 {
   "name": "CommitSearch_extsn",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "homepage": "https://rheehose.com",
   "type": "module",
   "scripts": {
