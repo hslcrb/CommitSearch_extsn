@@ -6,7 +6,7 @@ import { GitHubService, type Commit, type Repository } from './services/githubSe
 import { storageService, type GoalSettings } from './services/storageService';
 import { searchEngine } from './services/searchEngine';
 import { goalService, type GoalProgress } from './services/goalService';
-import { t, type Language } from './i18n';
+import { t } from './i18n';
 
 function App() {
   const [query, setQuery] = useState('');
